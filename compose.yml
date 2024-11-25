@@ -1,0 +1,17 @@
+services:
+  user:
+    build:
+      context: .
+      dockerfile: ./build/user/Dockerfile
+    container_name: user
+    restart: always
+    ports:
+      - "8080:8080"
+
+  protoc:
+    build:
+      context: .
+      dockerfile: ./build/protoc/Dockerfile
+    volumes:
+      - .:/work
+    command: /bin/sh -c "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
