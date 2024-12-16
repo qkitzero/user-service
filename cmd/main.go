@@ -1,51 +1,39 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net"
-	"os"
-	"os/signal"
 
-	pb "user/pb"
+	application_user "user/intarnal/application/user"
+	infrastructure_user "user/intarnal/infrastructure/persistence/user"
+	interface_user "user/intarnal/interface/grpc/user"
+	"user/pb"
 
 	"google.golang.org/grpc"
 )
 
-type myServer struct {
-	pb.UnimplementedUserServiceServer
-}
-
-func NewMyServer() *myServer {
-	return &myServer{}
-}
-
 func main() {
-	port := 8080
+	var db *sql.DB
+
+	port := 50051
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	s := grpc.NewServer()
+	server := grpc.NewServer()
 
-	pb.RegisterUserServiceServer(s, NewMyServer())
+	userRepository := infrastructure_user.NewUserRepository(db)
 
-	go func() {
-		log.Printf("start gRPC server port: %v", port)
-		s.Serve(listener)
-	}()
+	userService := application_user.NewUserService(userRepository)
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	log.Println("stopping gRPC server...")
-	s.GracefulStop()
-}
+	userHandler := interface_user.NewUserHandler(*userService)
 
-func (s *myServer) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	return &pb.CreateUserResponse{
-		Message: fmt.Sprintf("Create User, %s!", req.GetName()),
-	}, nil
+	pb.RegisterUserServiceServer(server, userHandler)
+
+	if err = server.Serve(listener); err != nil {
+		log.Fatal(err)
+	}
 }
