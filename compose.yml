@@ -7,7 +7,6 @@ services:
     restart: always
     depends_on:
       - db
-
     ports:
       - "50051:50051"
 
@@ -17,7 +16,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: db
+      MYSQL_DATABASE: user_db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
