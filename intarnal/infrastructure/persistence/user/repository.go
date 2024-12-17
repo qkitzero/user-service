@@ -1,16 +1,17 @@
 package user
 
 import (
-	"database/sql"
 	"fmt"
 	"user/intarnal/domain/user"
+
+	"gorm.io/gorm"
 )
 
 type userRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewUserRepository(db *sql.DB) user.UserRepository {
+func NewUserRepository(db *gorm.DB) user.UserRepository {
 	return &userRepository{db: db}
 }
 
