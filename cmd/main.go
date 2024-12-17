@@ -1,12 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net"
 
 	application_user "user/intarnal/application/user"
+	"user/intarnal/infrastructure/db"
 	infrastructure_user "user/intarnal/infrastructure/persistence/user"
 	interface_user "user/intarnal/interface/grpc/user"
 	"user/pb"
@@ -15,7 +15,10 @@ import (
 )
 
 func main() {
-	var db *sql.DB
+	db, err := db.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	port := 50051
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
