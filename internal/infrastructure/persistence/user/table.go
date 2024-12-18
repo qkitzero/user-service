@@ -4,8 +4,7 @@ import "user/internal/domain/user"
 
 type UserTable struct {
 	ID    user.UserID
-	Name  string
-	Email string
+	Email user.Email
 }
 
 func (UserTable) TableName() string {

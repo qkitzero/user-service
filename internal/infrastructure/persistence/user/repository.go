@@ -17,7 +17,6 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 func (r *userRepository) Create(user user.User) error {
 	userTable := UserTable{
 		ID:    user.ID(),
-		Name:  user.Name(),
 		Email: user.Email(),
 	}
 	r.db.Transaction(func(tx *gorm.DB) error {
