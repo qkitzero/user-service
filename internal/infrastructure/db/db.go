@@ -14,7 +14,11 @@ func Init() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&user.UserTable{})
+	if err := db.AutoMigrate(
+		&user.UserTable{},
+	); err != nil {
+		return nil, err
+	}
 
 	return db, nil
 }
