@@ -22,7 +22,6 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	if err := h.userService.CreateUser(req.GetName(), req.GetEmail()); err != nil {
 		return nil, err
 	}
-
 	return &pb.CreateUserResponse{
 		Message: fmt.Sprintf("Create User, %s!", req.GetName()),
 	}, nil
