@@ -1,7 +1,7 @@
 package user
 
 import (
-	"user/intarnal/domain/user"
+	"user/internal/domain/user"
 
 	"gorm.io/gorm"
 )

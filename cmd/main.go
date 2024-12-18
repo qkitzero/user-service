@@ -5,10 +5,10 @@ import (
 	"log"
 	"net"
 
-	application_user "user/intarnal/application/user"
-	"user/intarnal/infrastructure/db"
-	infrastructure_user "user/intarnal/infrastructure/persistence/user"
-	interface_user "user/intarnal/interface/grpc/user"
+	application_user "user/internal/application/user"
+	"user/internal/infrastructure/db"
+	infrastructure_user "user/internal/infrastructure/persistence/user"
+	interface_user "user/internal/interface/grpc/user"
 	"user/pb"
 
 	"google.golang.org/grpc"

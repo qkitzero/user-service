@@ -1,7 +1,7 @@
 package db
 
 import (
-	"user/intarnal/infrastructure/persistence/user"
+	"user/internal/infrastructure/persistence/user"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
