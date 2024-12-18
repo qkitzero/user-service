@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
-	"user/intarnal/application/user"
+	"user/internal/application/user"
 	"user/pb"
 )
 

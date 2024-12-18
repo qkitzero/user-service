@@ -1,6 +1,6 @@
 package user
 
-import "user/intarnal/domain/user"
+import "user/internal/domain/user"
 
 type UserService struct {
 	repo user.UserRepository
