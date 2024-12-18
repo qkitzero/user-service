@@ -11,6 +11,6 @@ func NewUserService(repo user.UserRepository) *UserService {
 }
 
 func (s *UserService) CreateUser(name, email string) error {
-	user := user.NewUser("id", name, email)
+	user := user.NewUser(user.NewUserID(), name, email)
 	return s.repo.Create(user)
 }

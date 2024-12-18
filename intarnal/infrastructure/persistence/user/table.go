@@ -1,7 +1,9 @@
 package user
 
+import "user/intarnal/domain/user"
+
 type UserTable struct {
-	ID    string
+	ID    user.UserID
 	Name  string
 	Email string
 }
