@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"user/intarnal/domain/user"
 
 	"gorm.io/gorm"
@@ -15,7 +14,17 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) Save(user user.User) error {
-	fmt.Println(user)
+func (r *userRepository) Create(user user.User) error {
+	userTable := UserTable{
+		ID:    user.ID(),
+		Name:  user.Name(),
+		Email: user.Email(),
+	}
+	r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&userTable).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 	return nil
 }
