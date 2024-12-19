@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"user/internal/application/user"
 	"user/pb"
 )
@@ -19,10 +18,11 @@ func NewUserHandler(userService user.UserService) *UserHandler {
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	if err := h.userService.CreateUser(req.GetEmail()); err != nil {
+	user, err := h.userService.CreateUser(req.GetDisplayName(), req.GetEmail())
+	if err != nil {
 		return nil, err
 	}
 	return &pb.CreateUserResponse{
-		Message: fmt.Sprintf("Create User!"),
+		UserId: user.ID().String(),
 	}, nil
 }
