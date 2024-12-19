@@ -2,25 +2,32 @@ package user
 
 type User interface {
 	ID() UserID
+	DisplayName() DisplayName
 	Email() Email
 }
 
 type user struct {
-	id    UserID
-	email Email
+	id          UserID
+	displayName DisplayName
+	email       Email
 }
 
 func (u user) ID() UserID {
 	return u.id
 }
 
+func (u user) DisplayName() DisplayName {
+	return u.displayName
+}
+
 func (u user) Email() Email {
 	return u.email
 }
 
-func NewUser(id UserID, email Email) User {
+func NewUser(id UserID, displayName DisplayName, email Email) User {
 	return user{
-		id:    id,
-		email: email,
+		id:          id,
+		displayName: displayName,
+		email:       email,
 	}
 }

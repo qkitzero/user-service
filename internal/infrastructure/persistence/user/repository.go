@@ -16,8 +16,9 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 
 func (r *userRepository) Create(user user.User) error {
 	userTable := UserTable{
-		ID:    user.ID(),
-		Email: user.Email(),
+		ID:          user.ID(),
+		DisplayName: user.DisplayName(),
+		Email:       user.Email(),
 	}
 	r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&userTable).Error; err != nil {
