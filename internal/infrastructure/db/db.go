@@ -1,14 +1,15 @@
 package db
 
 import (
+	"fmt"
 	"user/internal/infrastructure/persistence/user"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func Init() (*gorm.DB, error) {
-	dsn := "user:password@tcp(user-db:3306)/user_db?charset=utf8mb4&parseTime=True&loc=Local"
+func Init(dbUser, dbPassword, dbHost, dbPort, dbName string) (*gorm.DB, error) {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err

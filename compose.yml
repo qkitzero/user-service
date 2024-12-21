@@ -1,35 +1,42 @@
 services:
-  user:
+  user-server:
     build:
       context: .
       dockerfile: ./build/user/Dockerfile
     container_name: user-server
     restart: always
+    environment:
+      - PORT=${SERVER_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
     depends_on:
-      db:
+      user-db:
         condition: service_healthy
     ports:
-      - "50051:50051"
+      - "${SERVER_EXTERNAL_PORT}:${SERVER_PORT}"
     healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=localhost:50051"]
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:${SERVER_PORT}"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 10s
 
-  db:
+  user-db:
     image: mysql:8.0
     container_name: user-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: user_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_EXTERNAL_PORT}:${DB_PORT}"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user", "-ppassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASSWORD}"]
       interval: 30s
       timeout: 10s
       retries: 5
