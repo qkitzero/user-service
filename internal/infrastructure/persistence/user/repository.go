@@ -19,6 +19,7 @@ func (r *userRepository) Create(user user.User) error {
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
 		Email:       user.Email(),
+		CreatedAt:   user.CreatedAt(),
 	}
 	r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&userTable).Error; err != nil {

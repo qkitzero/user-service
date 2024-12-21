@@ -1,6 +1,9 @@
 package user
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestNewUser(t *testing.T) {
 	t.Parallel()
@@ -35,6 +38,9 @@ func TestNewUser(t *testing.T) {
 			}
 			if tt.success && user.Email() != tt.email {
 				t.Errorf("Email() = %v, want %v", user.Email(), tt.email)
+			}
+			if tt.success && time.Now().Sub(user.CreatedAt()) > time.Second {
+				t.Errorf("CreatedAt() = %v, want close to current time", user.CreatedAt())
 			}
 		})
 	}
