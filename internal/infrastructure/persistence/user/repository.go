@@ -21,11 +21,10 @@ func (r *userRepository) Create(user user.User) error {
 		Email:       user.Email(),
 		CreatedAt:   user.CreatedAt(),
 	}
-	r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&userTable).Error; err != nil {
-			return err
-		}
-		return nil
-	})
+
+	if err := r.db.Create(&userTable).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
