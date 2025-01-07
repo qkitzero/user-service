@@ -38,7 +38,7 @@ func main() {
 
 	userService := application_user.NewUserService(userRepository)
 
-	userHandler := interface_user.NewUserHandler(*userService)
+	userHandler := interface_user.NewUserHandler(userService)
 
 	pb.RegisterUserServiceServer(server, userHandler)
 

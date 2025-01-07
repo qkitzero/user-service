@@ -22,6 +22,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	if err != nil {
 		return nil, err
 	}
+
 	return &pb.CreateUserResponse{
 		UserId: user.ID().String(),
 	}, nil
