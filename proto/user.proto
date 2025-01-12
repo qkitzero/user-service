@@ -10,7 +10,6 @@ service UserService {
 
 message CreateUserRequest {
 	string display_name = 1;
-	string email = 2;
 }
 
 message CreateUserResponse {
