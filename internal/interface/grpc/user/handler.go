@@ -18,7 +18,7 @@ func NewUserHandler(userService user.UserService) *UserHandler {
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	user, err := h.userService.CreateUser(req.GetDisplayName(), req.GetEmail())
+	user, err := h.userService.CreateUser(req.GetDisplayName())
 	if err != nil {
 		return nil, err
 	}
