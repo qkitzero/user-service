@@ -1,9 +1,12 @@
 package user
 
-import "user/internal/domain/user"
+import (
+	"time"
+	"user/internal/domain/user"
+)
 
 type UserService interface {
-	CreateUser(displayName, email string) (user.User, error)
+	CreateUser(displayName string) (user.User, error)
 }
 
 type userService struct {
@@ -14,7 +17,7 @@ func NewUserService(repo user.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) CreateUser(displayName, email string) (user.User, error) {
+func (s *userService) CreateUser(displayName string) (user.User, error) {
 	userID := user.NewUserID()
 
 	userDisplayName, err := user.NewDisplayName(displayName)
@@ -22,12 +25,7 @@ func (s *userService) CreateUser(displayName, email string) (user.User, error) {
 		return nil, err
 	}
 
-	userEmail, err := user.NewEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	user := user.NewUser(userID, userDisplayName, userEmail)
+	user := user.NewUser(userID, userDisplayName, time.Now())
 	if err := s.repo.Create(user); err != nil {
 		return nil, err
 	}
