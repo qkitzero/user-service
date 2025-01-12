@@ -11,22 +11,18 @@ func TestNewUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to new display name: %v", err)
 	}
-	email, err := NewEmail("test@example.com")
-	if err != nil {
-		t.Errorf("failed to new email: %v", err)
-	}
 	tests := []struct {
 		name        string
 		success     bool
 		id          UserID
 		displayName DisplayName
-		email       Email
+		createdAt   time.Time
 	}{
-		{"success new user", true, NewUserID(), displayName, email},
+		{"success new user", true, NewUserID(), displayName, time.Now()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user := NewUser(tt.id, tt.displayName, tt.email)
+			user := NewUser(tt.id, tt.displayName, tt.createdAt)
 			if tt.success && user == nil {
 				t.Errorf("NewUser() = nil")
 			}
@@ -35,9 +31,6 @@ func TestNewUser(t *testing.T) {
 			}
 			if tt.success && user.DisplayName() != tt.displayName {
 				t.Errorf("DisplayName() = %v, want %v", user.DisplayName(), tt.displayName)
-			}
-			if tt.success && user.Email() != tt.email {
-				t.Errorf("Email() = %v, want %v", user.Email(), tt.email)
 			}
 			if tt.success && time.Now().Sub(user.CreatedAt()) > time.Second {
 				t.Errorf("CreatedAt() = %v, want close to current time", user.CreatedAt())
