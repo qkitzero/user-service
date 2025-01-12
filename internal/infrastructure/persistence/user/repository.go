@@ -18,7 +18,6 @@ func (r *userRepository) Create(user user.User) error {
 	userTable := UserTable{
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
-		Email:       user.Email(),
 		CreatedAt:   user.CreatedAt(),
 	}
 

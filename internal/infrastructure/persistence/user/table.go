@@ -8,7 +8,6 @@ import (
 type UserTable struct {
 	ID          user.UserID
 	DisplayName user.DisplayName
-	Email       user.Email
 	CreatedAt   time.Time
 }
 
