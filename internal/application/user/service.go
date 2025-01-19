@@ -2,7 +2,8 @@ package user
 
 import (
 	"time"
-	"user/internal/domain/user"
+
+	"github.com/qkitzero/user/internal/domain/user"
 )
 
 type UserService interface {

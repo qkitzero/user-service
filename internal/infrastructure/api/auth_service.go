@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"user/internal/application/auth"
 
 	"github.com/qkitzero/auth/pb"
+	"github.com/qkitzero/user/internal/application/auth"
 	"google.golang.org/grpc/metadata"
 )
 
