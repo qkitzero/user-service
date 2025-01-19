@@ -2,9 +2,10 @@ package user
 
 import (
 	"context"
-	"user/internal/application/auth"
-	"user/internal/application/user"
-	"user/pb"
+
+	"github.com/qkitzero/user/internal/application/auth"
+	"github.com/qkitzero/user/internal/application/user"
+	"github.com/qkitzero/user/pb"
 )
 
 type UserHandler struct {

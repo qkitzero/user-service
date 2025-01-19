@@ -6,14 +6,13 @@ import (
 	"net"
 	"os"
 
-	application_user "user/internal/application/user"
-	"user/internal/infrastructure/api"
-	"user/internal/infrastructure/db"
-	infrastructure_user "user/internal/infrastructure/persistence/user"
-	interface_user "user/internal/interface/grpc/user"
-	user_pb "user/pb"
-
 	auth_pb "github.com/qkitzero/auth/pb"
+	application_user "github.com/qkitzero/user/internal/application/user"
+	"github.com/qkitzero/user/internal/infrastructure/api"
+	"github.com/qkitzero/user/internal/infrastructure/db"
+	infrastructure_user "github.com/qkitzero/user/internal/infrastructure/persistence/user"
+	interface_user "github.com/qkitzero/user/internal/interface/grpc/user"
+	user_pb "github.com/qkitzero/user/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

@@ -1,4 +1,4 @@
-module user
+module github.com/qkitzero/user
 
 go 1.23
 
