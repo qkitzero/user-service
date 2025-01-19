@@ -6,6 +6,7 @@ package user;
 
 service UserService {
 	rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+	rpc GetUser (GetUserRequest) returns (GetUserResponse);
 }
 
 message CreateUserRequest {
@@ -14,4 +15,12 @@ message CreateUserRequest {
 
 message CreateUserResponse {
 	string user_id = 1;
+}
+
+message GetUserRequest {
+}
+
+message GetUserResponse {
+	string user_id = 1;
+	string display_name = 2;
 }

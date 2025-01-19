@@ -8,6 +8,7 @@ import (
 
 type UserService interface {
 	CreateUser(userID, displayName string) (user.User, error)
+	GetUser(userID string) (user.User, error)
 }
 
 type userService struct {
@@ -35,4 +36,13 @@ func (s *userService) CreateUser(id, displayName string) (user.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *userService) GetUser(id string) (user.User, error) {
+	userID, err := user.NewUserID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.repo.Read(userID)
 }

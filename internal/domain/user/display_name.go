@@ -7,6 +7,10 @@ import (
 
 type DisplayName string
 
+func (d DisplayName) String() string {
+	return string(d)
+}
+
 func NewDisplayName(s string) (DisplayName, error) {
 	s = strings.TrimSpace(s)
 	if s == "" {
