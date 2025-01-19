@@ -26,3 +26,17 @@ func (r *userRepository) Create(user user.User) error {
 
 	return nil
 }
+
+func (r *userRepository) Read(userID user.UserID) (user.User, error) {
+	var userTable UserTable
+
+	if err := r.db.First(&userTable, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	return user.NewUser(
+		userTable.ID,
+		userTable.DisplayName,
+		userTable.CreatedAt,
+	), nil
+}
