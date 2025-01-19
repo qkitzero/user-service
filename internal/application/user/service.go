@@ -6,7 +6,7 @@ import (
 )
 
 type UserService interface {
-	CreateUser(displayName string) (user.User, error)
+	CreateUser(userID, displayName string) (user.User, error)
 }
 
 type userService struct {
@@ -17,8 +17,11 @@ func NewUserService(repo user.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) CreateUser(displayName string) (user.User, error) {
-	userID := user.NewUserID()
+func (s *userService) CreateUser(id, displayName string) (user.User, error) {
+	userID, err := user.NewUserID(id)
+	if err != nil {
+		return nil, err
+	}
 
 	userDisplayName, err := user.NewDisplayName(displayName)
 	if err != nil {
