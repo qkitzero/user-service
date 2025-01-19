@@ -7,12 +7,15 @@ import (
 	"os"
 
 	application_user "user/internal/application/user"
+	"user/internal/infrastructure/api"
 	"user/internal/infrastructure/db"
 	infrastructure_user "user/internal/infrastructure/persistence/user"
 	interface_user "user/internal/interface/grpc/user"
-	"user/pb"
+	user_pb "user/pb"
 
+	auth_pb "github.com/qkitzero/auth/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -32,15 +35,25 @@ func main() {
 		log.Fatal(err)
 	}
 
+	conn, err := grpc.NewClient(
+		getEnv("AUTH_SERVICE_HOST")+":"+getEnv("AUTH_SERVICE_PORT"),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // dev
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	server := grpc.NewServer()
 
+	authServiceClient := auth_pb.NewAuthServiceClient(conn)
 	userRepository := infrastructure_user.NewUserRepository(db)
 
+	authService := api.NewAuthService(authServiceClient)
 	userService := application_user.NewUserService(userRepository)
 
-	userHandler := interface_user.NewUserHandler(userService)
+	userHandler := interface_user.NewUserHandler(authService, userService)
 
-	pb.RegisterUserServiceServer(server, userHandler)
+	user_pb.RegisterUserServiceServer(server, userHandler)
 
 	if err = server.Serve(listener); err != nil {
 		log.Fatal(err)
