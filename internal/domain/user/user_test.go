@@ -7,6 +7,10 @@ import (
 
 func TestNewUser(t *testing.T) {
 	t.Parallel()
+	id, err := NewUserID("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
+	if err != nil {
+		t.Errorf("failed to new user id: %v", err)
+	}
 	displayName, err := NewDisplayName("test user")
 	if err != nil {
 		t.Errorf("failed to new display name: %v", err)
@@ -18,7 +22,7 @@ func TestNewUser(t *testing.T) {
 		displayName DisplayName
 		createdAt   time.Time
 	}{
-		{"success new user", true, NewUserID(), displayName, time.Now()},
+		{"success new user", true, id, displayName, time.Now()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
