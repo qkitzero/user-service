@@ -18,6 +18,7 @@ func (r *userRepository) Create(user user.User) error {
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
 		CreatedAt:   user.CreatedAt(),
+		UpdatedAt:   user.UpdatedAt(),
 	}
 
 	if err := r.db.Create(&userTable).Error; err != nil {
@@ -38,5 +39,21 @@ func (r *userRepository) Read(userID user.UserID) (user.User, error) {
 		userTable.ID,
 		userTable.DisplayName,
 		userTable.CreatedAt,
+		userTable.UpdatedAt,
 	), nil
+}
+
+func (r *userRepository) Update(user user.User) error {
+	userTable := UserTable{
+		ID:          user.ID(),
+		DisplayName: user.DisplayName(),
+		CreatedAt:   user.CreatedAt(),
+		UpdatedAt:   user.UpdatedAt(),
+	}
+
+	if err := r.db.Save(&userTable).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

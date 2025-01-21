@@ -56,3 +56,20 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 		DisplayName: user.DisplayName().String(),
 	}, nil
 }
+
+func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	userID, err := h.authService.VerifyToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := h.userService.UpdateUser(userID, req.GetDisplayName())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateUserResponse{
+		UserId:      user.ID().String(),
+		DisplayName: user.DisplayName().String(),
+	}, nil
+}
