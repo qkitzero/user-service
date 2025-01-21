@@ -21,12 +21,13 @@ func TestNewUser(t *testing.T) {
 		id          UserID
 		displayName DisplayName
 		createdAt   time.Time
+		updatedAt   time.Time
 	}{
-		{"success new user", true, id, displayName, time.Now()},
+		{"success new user", true, id, displayName, time.Now(), time.Now()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user := NewUser(tt.id, tt.displayName, tt.createdAt)
+			user := NewUser(tt.id, tt.displayName, tt.createdAt, tt.updatedAt)
 			if tt.success && user == nil {
 				t.Errorf("NewUser() = nil")
 			}
@@ -38,6 +39,9 @@ func TestNewUser(t *testing.T) {
 			}
 			if tt.success && time.Now().Sub(user.CreatedAt()) > time.Second {
 				t.Errorf("CreatedAt() = %v, want close to current time", user.CreatedAt())
+			}
+			if tt.success && time.Now().Sub(user.UpdatedAt()) > time.Second {
+				t.Errorf("UpdatedAt() = %v, want close to current time", user.UpdatedAt())
 			}
 		})
 	}
