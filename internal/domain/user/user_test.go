@@ -46,3 +46,39 @@ func TestNewUser(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateUser(t *testing.T) {
+	t.Parallel()
+	id, err := NewUserID("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
+	if err != nil {
+		t.Errorf("failed to new user id: %v", err)
+	}
+	displayName, err := NewDisplayName("test user")
+	if err != nil {
+		t.Errorf("failed to new display name: %v", err)
+	}
+	updatedDisplayName, err := NewDisplayName("updated test user")
+	if err != nil {
+		t.Errorf("failed to new display name: %v", err)
+	}
+	user := NewUser(id, displayName, time.Now(), time.Now())
+	tests := []struct {
+		name               string
+		success            bool
+		user               User
+		updatedDisplayName DisplayName
+	}{
+		{"success update user", true, user, updatedDisplayName},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.user.Update(tt.updatedDisplayName)
+			if tt.success && user.DisplayName() != tt.updatedDisplayName {
+				t.Errorf("DisplayName() = %v, want %v", user.DisplayName(), tt.updatedDisplayName)
+			}
+			if tt.success && !user.CreatedAt().Before(user.UpdatedAt()) {
+				t.Errorf("CreatedAt() = %v, UpdatedAt() = %v, want CreatedAt < UpdatedAt", user.CreatedAt(), user.UpdatedAt())
+			}
+		})
+	}
+}
