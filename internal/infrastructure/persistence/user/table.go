@@ -10,6 +10,7 @@ type UserTable struct {
 	ID          user.UserID
 	DisplayName user.DisplayName
 	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (UserTable) TableName() string {
