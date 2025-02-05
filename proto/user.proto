@@ -10,8 +10,15 @@ service UserService {
 	rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
 }
 
+message Date {
+	int32 year = 1;
+	int32 month = 2;
+	int32 day = 3;
+}
+
 message CreateUserRequest {
 	string display_name = 1;
+	Date birth_date = 2;
 }
 
 message CreateUserResponse {
@@ -24,6 +31,7 @@ message GetUserRequest {
 message GetUserResponse {
 	string user_id = 1;
 	string display_name = 2;
+	Date birth_date = 3;
 }
 
 message UpdateUserRequest {

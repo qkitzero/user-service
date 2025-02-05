@@ -7,7 +7,7 @@ import (
 )
 
 type UserService interface {
-	CreateUser(userID, displayName string) (user.User, error)
+	CreateUser(userID, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error)
 	GetUser(userID string) (user.User, error)
 	UpdateUser(userID, displayName string) (user.User, error)
 }
@@ -20,7 +20,7 @@ func NewUserService(repo user.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) CreateUser(id, displayName string) (user.User, error) {
+func (s *userService) CreateUser(id, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error) {
 	userID, err := user.NewUserID(id)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,13 @@ func (s *userService) CreateUser(id, displayName string) (user.User, error) {
 		return nil, err
 	}
 
-	user := user.NewUser(userID, userDisplayName, time.Now(), time.Now())
+	userBirthDate, err := user.NewBirthDate(birthYear, birthMonth, birthDay)
+	if err != nil {
+		return nil, err
+	}
+
+	user := user.NewUser(userID, userDisplayName, userBirthDate, time.Now(), time.Now())
+
 	if err := s.repo.Create(user); err != nil {
 		return nil, err
 	}

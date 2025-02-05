@@ -15,19 +15,24 @@ func TestNewUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to new display name: %v", err)
 	}
+	birthDate, err := NewBirthDate(2000, 1, 1)
+	if err != nil {
+		t.Errorf("failed to new birth date: %v", err)
+	}
 	tests := []struct {
 		name        string
 		success     bool
 		id          UserID
 		displayName DisplayName
+		birthDate   BirthDate
 		createdAt   time.Time
 		updatedAt   time.Time
 	}{
-		{"success new user", true, id, displayName, time.Now(), time.Now()},
+		{"success new user", true, id, displayName, birthDate, time.Now(), time.Now()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user := NewUser(tt.id, tt.displayName, tt.createdAt, tt.updatedAt)
+			user := NewUser(tt.id, tt.displayName, tt.birthDate, tt.createdAt, tt.updatedAt)
 			if tt.success && user == nil {
 				t.Errorf("NewUser() = nil")
 			}
@@ -36,6 +41,9 @@ func TestNewUser(t *testing.T) {
 			}
 			if tt.success && user.DisplayName() != tt.displayName {
 				t.Errorf("DisplayName() = %v, want %v", user.DisplayName(), tt.displayName)
+			}
+			if tt.success && user.BirthDate() != tt.birthDate {
+				t.Errorf("BirthDate() = %v, want %v", user.BirthDate(), tt.birthDate)
 			}
 			if tt.success && time.Now().Sub(user.CreatedAt()) > time.Second {
 				t.Errorf("CreatedAt() = %v, want close to current time", user.CreatedAt())
@@ -57,11 +65,15 @@ func TestUpdateUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to new display name: %v", err)
 	}
+	birthDate, err := NewBirthDate(2000, 1, 1)
+	if err != nil {
+		t.Errorf("failed to new birth date: %v", err)
+	}
 	updatedDisplayName, err := NewDisplayName("updated test user")
 	if err != nil {
 		t.Errorf("failed to new display name: %v", err)
 	}
-	user := NewUser(id, displayName, time.Now(), time.Now())
+	user := NewUser(id, displayName, birthDate, time.Now(), time.Now())
 	tests := []struct {
 		name               string
 		success            bool

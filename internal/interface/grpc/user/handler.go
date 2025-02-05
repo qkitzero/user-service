@@ -30,7 +30,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, err
 	}
 
-	user, err := h.userService.CreateUser(userID, req.GetDisplayName())
+	user, err := h.userService.CreateUser(userID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +54,11 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	return &pb.GetUserResponse{
 		UserId:      user.ID().String(),
 		DisplayName: user.DisplayName().String(),
+		BirthDate: &pb.Date{
+			Year:  int32(user.BirthDate().Year()),
+			Month: int32(user.BirthDate().Month()),
+			Day:   int32(user.BirthDate().Day()),
+		},
 	}, nil
 }
 
