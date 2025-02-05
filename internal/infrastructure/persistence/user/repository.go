@@ -17,6 +17,7 @@ func (r *userRepository) Create(user user.User) error {
 	userTable := UserTable{
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
+		BirthDate:   user.BirthDate(),
 		CreatedAt:   user.CreatedAt(),
 		UpdatedAt:   user.UpdatedAt(),
 	}
@@ -38,6 +39,7 @@ func (r *userRepository) Read(userID user.UserID) (user.User, error) {
 	return user.NewUser(
 		userTable.ID,
 		userTable.DisplayName,
+		userTable.BirthDate,
 		userTable.CreatedAt,
 		userTable.UpdatedAt,
 	), nil
@@ -47,6 +49,7 @@ func (r *userRepository) Update(user user.User) error {
 	userTable := UserTable{
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
+		BirthDate:   user.BirthDate(),
 		CreatedAt:   user.CreatedAt(),
 		UpdatedAt:   user.UpdatedAt(),
 	}
