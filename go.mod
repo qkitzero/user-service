@@ -1,9 +1,11 @@
 module github.com/qkitzero/user
 
-go 1.23
+go 1.24.1
+
 require (
 	github.com/google/uuid v1.6.0
 	github.com/qkitzero/auth v1.0.2
+	go.uber.org/mock v0.5.0
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.35.2
 	gorm.io/driver/mysql v1.5.7
