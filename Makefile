@@ -4,6 +4,7 @@ mockgen:
 	$(MOCKGEN_CMD) -source=internal/domain/user/user.go -destination=mocks/domain/user/mock_user.go -package=mocks
 	$(MOCKGEN_CMD) -source=internal/domain/user/repository.go -destination=mocks/domain/user/mock_repository.go -package=mocks
 	$(MOCKGEN_CMD) -source=internal/application/user/service.go -destination=mocks/application/user/mock_service.go -package=mocks
+	$(MOCKGEN_CMD) -source=internal/application/auth/service.go -destination=mocks/application/auth/mock_service.go -package=mocks
 
 test:
 	mkdir -p tmp

@@ -2,6 +2,6 @@
 
 - Microservices architecture
 - gRPC
-- DDD
+- Clean Architecture
 - Docker
 - Test
