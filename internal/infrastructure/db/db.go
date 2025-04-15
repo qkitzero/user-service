@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/qkitzero/user/internal/infrastructure/persistence/user"
+	"github.com/qkitzero/user/internal/infrastructure/user"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

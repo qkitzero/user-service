@@ -6,21 +6,21 @@ import (
 	"github.com/qkitzero/user/internal/domain/user"
 )
 
-type UserService interface {
+type UserUsecase interface {
 	CreateUser(userID, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error)
 	GetUser(userID string) (user.User, error)
 	UpdateUser(userID, displayName string) (user.User, error)
 }
 
-type userService struct {
+type userUsecase struct {
 	repo user.UserRepository
 }
 
-func NewUserService(repo user.UserRepository) UserService {
-	return &userService{repo: repo}
+func NewUserUsecase(repo user.UserRepository) UserUsecase {
+	return &userUsecase{repo: repo}
 }
 
-func (s *userService) CreateUser(id, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error) {
+func (s *userUsecase) CreateUser(id, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error) {
 	userID, err := user.NewUserID(id)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (s *userService) CreateUser(id, displayName string, birthYear, birthMonth, 
 	return user, nil
 }
 
-func (s *userService) GetUser(id string) (user.User, error) {
+func (s *userUsecase) GetUser(id string) (user.User, error) {
 	userID, err := user.NewUserID(id)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (s *userService) GetUser(id string) (user.User, error) {
 	return s.repo.Read(userID)
 }
 
-func (s *userService) UpdateUser(id, displayName string) (user.User, error) {
+func (s *userUsecase) UpdateUser(id, displayName string) (user.User, error) {
 	userID, err := user.NewUserID(id)
 	if err != nil {
 		return nil, err
