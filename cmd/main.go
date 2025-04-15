@@ -10,7 +10,7 @@ import (
 	application_user "github.com/qkitzero/user/internal/application/user"
 	"github.com/qkitzero/user/internal/infrastructure/api"
 	"github.com/qkitzero/user/internal/infrastructure/db"
-	infrastructure_user "github.com/qkitzero/user/internal/infrastructure/persistence/user"
+	infrastructure_user "github.com/qkitzero/user/internal/infrastructure/user"
 	interface_user "github.com/qkitzero/user/internal/interface/grpc/user"
 	user_pb "github.com/qkitzero/user/pb"
 	"google.golang.org/grpc"
@@ -47,10 +47,10 @@ func main() {
 	authServiceClient := auth_pb.NewAuthServiceClient(conn)
 	userRepository := infrastructure_user.NewUserRepository(db)
 
-	authService := api.NewAuthService(authServiceClient)
-	userService := application_user.NewUserService(userRepository)
+	authUsecase := api.NewAuthUsecase(authServiceClient)
+	userUsecase := application_user.NewUserUsecase(userRepository)
 
-	userHandler := interface_user.NewUserHandler(authService, userService)
+	userHandler := interface_user.NewUserHandler(authUsecase, userUsecase)
 
 	user_pb.RegisterUserServiceServer(server, userHandler)
 

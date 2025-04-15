@@ -9,8 +9,8 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/qkitzero/user/internal/domain/user"
-	mocksAuthService "github.com/qkitzero/user/mocks/application/auth"
-	mocksUserService "github.com/qkitzero/user/mocks/application/user"
+	mocksAuthUsecase "github.com/qkitzero/user/mocks/application/auth"
+	mocksUserUsecase "github.com/qkitzero/user/mocks/application/user"
 	mocksUser "github.com/qkitzero/user/mocks/domain/user"
 )
 
@@ -37,15 +37,15 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthService := mocksAuthService.NewMockAuthService(ctrl)
-			mockUserService := mocksUserService.NewMockUserService(ctrl)
+			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
+			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
 			mockUser := mocksUser.NewMockUser(ctrl)
-			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
-			mockUserService.EXPECT().CreateUser(tt.userID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
+			mockUserUsecase.EXPECT().CreateUser(tt.userID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
 			mockUserID, _ := user.NewUserID(tt.userID)
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthService, mockUserService)
+			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
 
 			req := &pb.CreateUserRequest{
 				DisplayName: tt.displayName,
@@ -86,19 +86,19 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthService := mocksAuthService.NewMockAuthService(ctrl)
-			mockUserService := mocksUserService.NewMockUserService(ctrl)
+			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
+			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
 			mockUser := mocksUser.NewMockUser(ctrl)
 			mockUserID, _ := user.NewUserID(tt.userID)
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
-			mockUserService.EXPECT().GetUser(tt.userID).Return(mockUser, tt.getUserErr).AnyTimes()
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
+			mockUserUsecase.EXPECT().GetUser(tt.userID).Return(mockUser, tt.getUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthService, mockUserService)
+			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
 
 			req := &pb.GetUserRequest{}
 
@@ -133,17 +133,17 @@ func TestUpdateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthService := mocksAuthService.NewMockAuthService(ctrl)
-			mockUserService := mocksUserService.NewMockUserService(ctrl)
+			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
+			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
 			mockUser := mocksUser.NewMockUser(ctrl)
 			mockUserID, _ := user.NewUserID(tt.userID)
 			mockDisplayName, _ := user.NewDisplayName(tt.displayName)
-			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
-			mockUserService.EXPECT().UpdateUser(tt.userID, tt.displayName).Return(mockUser, tt.updateUserErr).AnyTimes()
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
+			mockUserUsecase.EXPECT().UpdateUser(tt.userID, tt.displayName).Return(mockUser, tt.updateUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthService, mockUserService)
+			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
 
 			req := &pb.UpdateUserRequest{
 				DisplayName: tt.displayName,

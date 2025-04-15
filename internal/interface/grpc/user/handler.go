@@ -10,27 +10,27 @@ import (
 
 type UserHandler struct {
 	pb.UnimplementedUserServiceServer
-	authService auth.AuthService
-	userService user.UserService
+	authUsecase auth.AuthUsecase
+	userUsecase user.UserUsecase
 }
 
 func NewUserHandler(
-	authService auth.AuthService,
-	userService user.UserService,
+	authUsecase auth.AuthUsecase,
+	userUsecase user.UserUsecase,
 ) *UserHandler {
 	return &UserHandler{
-		authService: authService,
-		userService: userService,
+		authUsecase: authUsecase,
+		userUsecase: userUsecase,
 	}
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	userID, err := h.authService.VerifyToken(ctx)
+	userID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := h.userService.CreateUser(userID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	user, err := h.userUsecase.CreateUser(userID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +41,12 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	userID, err := h.authService.VerifyToken(ctx)
+	userID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := h.userService.GetUser(userID)
+	user, err := h.userUsecase.GetUser(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +63,12 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	userID, err := h.authService.VerifyToken(ctx)
+	userID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := h.userService.UpdateUser(userID, req.GetDisplayName())
+	user, err := h.userUsecase.UpdateUser(userID, req.GetDisplayName())
 	if err != nil {
 		return nil, err
 	}
