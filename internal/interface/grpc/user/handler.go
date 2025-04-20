@@ -3,13 +3,13 @@ package user
 import (
 	"context"
 
+	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
 	"github.com/qkitzero/user/internal/application/auth"
 	"github.com/qkitzero/user/internal/application/user"
-	"github.com/qkitzero/user/pb"
 )
 
 type UserHandler struct {
-	pb.UnimplementedUserServiceServer
+	userv1.UnimplementedUserServiceServer
 	authUsecase auth.AuthUsecase
 	userUsecase user.UserUsecase
 }
@@ -24,7 +24,7 @@ func NewUserHandler(
 	}
 }
 
-func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
 	userID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
@@ -35,12 +35,12 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, err
 	}
 
-	return &pb.CreateUserResponse{
+	return &userv1.CreateUserResponse{
 		UserId: user.ID().String(),
 	}, nil
 }
 
-func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
 	userID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
@@ -51,10 +51,10 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 		return nil, err
 	}
 
-	return &pb.GetUserResponse{
+	return &userv1.GetUserResponse{
 		UserId:      user.ID().String(),
 		DisplayName: user.DisplayName().String(),
-		BirthDate: &pb.Date{
+		BirthDate: &userv1.Date{
 			Year:  int32(user.BirthDate().Year()),
 			Month: int32(user.BirthDate().Month()),
 			Day:   int32(user.BirthDate().Day()),
@@ -62,7 +62,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	}, nil
 }
 
-func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UpdateUserResponse, error) {
 	userID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, err
 	}
 
-	return &pb.UpdateUserResponse{
+	return &userv1.UpdateUserResponse{
 		UserId:      user.ID().String(),
 		DisplayName: user.DisplayName().String(),
 	}, nil
