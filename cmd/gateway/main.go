@@ -21,6 +21,7 @@ func main() {
 	mux := runtime.NewServeMux()
 	endpoint := util.GetEnv("SERVER_HOST") + ":" + util.GetEnv("SERVER_PORT")
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+
 	err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, endpoint, opts)
 	if err != nil {
 		log.Fatal(err)
