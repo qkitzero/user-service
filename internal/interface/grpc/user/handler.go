@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 
+	"google.golang.org/genproto/googleapis/type/date"
+
 	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
 	"github.com/qkitzero/user/internal/application/auth"
 	"github.com/qkitzero/user/internal/application/user"
@@ -54,7 +56,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 	return &userv1.GetUserResponse{
 		UserId:      user.ID().String(),
 		DisplayName: user.DisplayName().String(),
-		BirthDate: &userv1.Date{
+		BirthDate: &date.Date{
 			Year:  int32(user.BirthDate().Year()),
 			Month: int32(user.BirthDate().Month()),
 			Day:   int32(user.BirthDate().Day()),
