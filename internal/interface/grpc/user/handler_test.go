@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"go.uber.org/mock/gomock"
+	"google.golang.org/genproto/googleapis/type/date"
 
 	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
 	"github.com/qkitzero/user/internal/domain/user"
@@ -49,7 +50,7 @@ func TestCreateUser(t *testing.T) {
 
 			req := &userv1.CreateUserRequest{
 				DisplayName: tt.displayName,
-				BirthDate: &userv1.Date{
+				BirthDate: &date.Date{
 					Year:  tt.year,
 					Month: tt.month,
 					Day:   tt.day,
