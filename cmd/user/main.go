@@ -4,6 +4,11 @@ import (
 	"log"
 	"net"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
+
 	auth_pb "github.com/qkitzero/auth/pb"
 	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
 	application_user "github.com/qkitzero/user/internal/application/user"
@@ -12,8 +17,6 @@ import (
 	infrastructure_user "github.com/qkitzero/user/internal/infrastructure/user"
 	interface_user "github.com/qkitzero/user/internal/interface/grpc/user"
 	"github.com/qkitzero/user/util"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -49,9 +52,13 @@ func main() {
 	authUsecase := api_auth.NewAuthUsecase(authServiceClient)
 	userUsecase := application_user.NewUserUsecase(userRepository)
 
+	healthServer := health.NewServer()
 	userHandler := interface_user.NewUserHandler(authUsecase, userUsecase)
 
+	grpc_health_v1.RegisterHealthServer(server, healthServer)
 	userv1.RegisterUserServiceServer(server, userHandler)
+
+	healthServer.SetServingStatus("user", grpc_health_v1.HealthCheckResponse_SERVING)
 
 	if err = server.Serve(listener); err != nil {
 		log.Fatal(err)
