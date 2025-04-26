@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/qkitzero/auth/pb"
+	authv1 "github.com/qkitzero/auth/gen/go/proto/auth/v1"
 	"github.com/qkitzero/user/internal/application/auth"
 	"google.golang.org/grpc/metadata"
 )
 
 type authUsecase struct {
-	client pb.AuthServiceClient
+	client authv1.AuthServiceClient
 }
 
-func NewAuthUsecase(client pb.AuthServiceClient) auth.AuthUsecase {
+func NewAuthUsecase(client authv1.AuthServiceClient) auth.AuthUsecase {
 	return &authUsecase{client: client}
 }
 
@@ -32,7 +32,7 @@ func (s *authUsecase) VerifyToken(ctx context.Context) (string, error) {
 
 	accessToken := strings.TrimPrefix(authHeader[0], "Bearer ")
 
-	verifyTokenRequest := &pb.VerifyTokenRequest{AccessToken: accessToken}
+	verifyTokenRequest := &authv1.VerifyTokenRequest{AccessToken: accessToken}
 
 	verifyTokenResponse, err := s.client.VerifyToken(ctx, verifyTokenRequest)
 	if err != nil {
