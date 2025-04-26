@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
-	auth_pb "github.com/qkitzero/auth/pb"
+	authv1 "github.com/qkitzero/auth/gen/go/proto/auth/v1"
 	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
 	application_user "github.com/qkitzero/user/internal/application/user"
 	api_auth "github.com/qkitzero/user/internal/infrastructure/api/auth"
@@ -46,7 +46,7 @@ func main() {
 
 	server := grpc.NewServer()
 
-	authServiceClient := auth_pb.NewAuthServiceClient(conn)
+	authServiceClient := authv1.NewAuthServiceClient(conn)
 	userRepository := infrastructure_user.NewUserRepository(db)
 
 	authUsecase := api_auth.NewAuthUsecase(authServiceClient)
