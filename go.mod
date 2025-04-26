@@ -5,8 +5,8 @@ go 1.24.1
 require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
-	github.com/qkitzero/auth v1.0.2
-	go.uber.org/mock v0.5.0
+	github.com/qkitzero/auth v1.0.3
+	go.uber.org/mock v0.5.1
 	google.golang.org/genproto v0.0.0-20250422160041-2d3770c4ea7f
 	google.golang.org/genproto/googleapis/api v0.0.0-20250414145226-207652e42e2e
 	google.golang.org/grpc v1.72.0
@@ -20,8 +20,6 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/kr/text v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
