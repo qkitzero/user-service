@@ -1,6 +1,6 @@
 # User Service
 
-- Microservices architecture
+- Microservices Architecture
 - gRPC
 - gRPC Gateway
 - Buf
