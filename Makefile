@@ -1,3 +1,6 @@
+format:
+	buf format -w
+
 protogen:
 	buf generate
 
