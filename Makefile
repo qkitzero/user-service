@@ -1,5 +1,8 @@
-format:
+protoformat:
 	buf format -w
+
+protolint:
+	buf lint
 
 protogen:
 	buf generate
