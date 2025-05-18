@@ -6,7 +6,7 @@ import (
 	"github.com/qkitzero/user/internal/domain/user"
 )
 
-type UserTable struct {
+type UserModel struct {
 	ID          user.UserID
 	DisplayName user.DisplayName
 	BirthDate   user.BirthDate
@@ -14,6 +14,6 @@ type UserTable struct {
 	UpdatedAt   time.Time
 }
 
-func (UserTable) TableName() string {
+func (UserModel) TableName() string {
 	return "user"
 }
