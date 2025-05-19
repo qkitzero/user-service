@@ -14,7 +14,7 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 }
 
 func (r *userRepository) Create(user user.User) error {
-	userTable := UserTable{
+	userModel := UserModel{
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
 		BirthDate:   user.BirthDate(),
@@ -22,7 +22,7 @@ func (r *userRepository) Create(user user.User) error {
 		UpdatedAt:   user.UpdatedAt(),
 	}
 
-	if err := r.db.Create(&userTable).Error; err != nil {
+	if err := r.db.Create(&userModel).Error; err != nil {
 		return err
 	}
 
@@ -30,23 +30,23 @@ func (r *userRepository) Create(user user.User) error {
 }
 
 func (r *userRepository) Read(userID user.UserID) (user.User, error) {
-	var userTable UserTable
+	var userModel UserModel
 
-	if err := r.db.First(&userTable, "id = ?", userID).Error; err != nil {
+	if err := r.db.First(&userModel, "id = ?", userID).Error; err != nil {
 		return nil, err
 	}
 
 	return user.NewUser(
-		userTable.ID,
-		userTable.DisplayName,
-		userTable.BirthDate,
-		userTable.CreatedAt,
-		userTable.UpdatedAt,
+		userModel.ID,
+		userModel.DisplayName,
+		userModel.BirthDate,
+		userModel.CreatedAt,
+		userModel.UpdatedAt,
 	), nil
 }
 
 func (r *userRepository) Update(user user.User) error {
-	userTable := UserTable{
+	userModel := UserModel{
 		ID:          user.ID(),
 		DisplayName: user.DisplayName(),
 		BirthDate:   user.BirthDate(),
@@ -54,7 +54,7 @@ func (r *userRepository) Update(user user.User) error {
 		UpdatedAt:   user.UpdatedAt(),
 	}
 
-	if err := r.db.Save(&userTable).Error; err != nil {
+	if err := r.db.Save(&userModel).Error; err != nil {
 		return err
 	}
 
