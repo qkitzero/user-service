@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/genproto/googleapis/type/date"
 
-	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
+	userv1 "github.com/qkitzero/user/gen/go/user/v1"
 	"github.com/qkitzero/user/internal/application/auth"
 	"github.com/qkitzero/user/internal/application/user"
 )

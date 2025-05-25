@@ -8,7 +8,7 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/genproto/googleapis/type/date"
 
-	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
+	userv1 "github.com/qkitzero/user/gen/go/user/v1"
 	"github.com/qkitzero/user/internal/domain/user"
 	mocksAuthUsecase "github.com/qkitzero/user/mocks/application/auth"
 	mocksUserUsecase "github.com/qkitzero/user/mocks/application/user"

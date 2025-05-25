@@ -2,10 +2,9 @@ package auth
 
 import (
 	"context"
-	"fmt"
-	"strings"
+	"errors"
 
-	authv1 "github.com/qkitzero/auth/gen/go/proto/auth/v1"
+	authv1 "github.com/qkitzero/auth/gen/go/auth/v1"
 	"github.com/qkitzero/user/internal/application/auth"
 	"google.golang.org/grpc/metadata"
 )
@@ -21,18 +20,12 @@ func NewAuthUsecase(client authv1.AuthServiceClient) auth.AuthUsecase {
 func (s *authUsecase) VerifyToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return "", fmt.Errorf("no metadata in context")
+		return "", errors.New("metadata is missing")
 	}
 
-	authHeader := md["authorization"]
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	if len(authHeader) == 0 {
-		return "", fmt.Errorf("authorization header is missing")
-	}
-
-	accessToken := strings.TrimPrefix(authHeader[0], "Bearer ")
-
-	verifyTokenRequest := &authv1.VerifyTokenRequest{AccessToken: accessToken}
+	verifyTokenRequest := &authv1.VerifyTokenRequest{}
 
 	verifyTokenResponse, err := s.client.VerifyToken(ctx, verifyTokenRequest)
 	if err != nil {
