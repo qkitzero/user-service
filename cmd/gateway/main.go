@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
-	userv1 "github.com/qkitzero/user/gen/go/proto/user/v1"
+	userv1 "github.com/qkitzero/user/gen/go/user/v1"
 	"github.com/qkitzero/user/util"
 )
 
