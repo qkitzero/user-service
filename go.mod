@@ -1,11 +1,11 @@
 module github.com/qkitzero/user
 
-go 1.24.1
+go 1.24.3
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
-	github.com/qkitzero/auth v1.0.3
+	github.com/qkitzero/auth v1.1.0
 	go.uber.org/mock v0.5.1
 	google.golang.org/genproto v0.0.0-20250422160041-2d3770c4ea7f
 	google.golang.org/genproto/googleapis/api v0.0.0-20250414145226-207652e42e2e
