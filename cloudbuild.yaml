@@ -28,6 +28,8 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA",
         "--region",
         "us-central1",
+        "--update-secrets",
+        "DB_USER=USER_SERVICE_DB_USER:latest,DB_PASSWORD=USER_SERVICE_DB_PASSWORD:latest,DB_HOST=USER_SERVICE_DB_HOST:latest,DB_PORT=USER_SERVICE_DB_PORT:latest,DB_NAME=USER_SERVICE_DB_NAME:latest,AUTH_SERVICE_HOST=AUTH_SERVICE_HOST:latest,AUTH_SERVICE_PORT=AUTH_SERVICE_PORT:latest",
       ]
 
 images:
