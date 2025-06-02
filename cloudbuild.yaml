@@ -28,8 +28,6 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA",
         "--region",
         "us-central1",
-        "--update-secrets",
-        "PORT=USER_SERVICE_PORT:latest",
       ]
 
 images:
