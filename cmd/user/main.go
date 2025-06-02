@@ -21,23 +21,23 @@ import (
 
 func main() {
 	db, err := db.Init(
-		util.GetEnv("DB_USER"),
-		util.GetEnv("DB_PASSWORD"),
-		util.GetEnv("DB_HOST"),
-		util.GetEnv("DB_PORT"),
-		util.GetEnv("DB_NAME"),
+		util.GetEnv("DB_USER", ""),
+		util.GetEnv("DB_PASSWORD", ""),
+		util.GetEnv("DB_HOST", ""),
+		util.GetEnv("DB_PORT", ""),
+		util.GetEnv("DB_NAME", ""),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	listener, err := net.Listen("tcp", ":"+util.GetEnv("PORT"))
+	listener, err := net.Listen("tcp", ":"+util.GetEnv("PORT", ""))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	conn, err := grpc.NewClient(
-		util.GetEnv("AUTH_SERVICE_HOST")+":"+util.GetEnv("AUTH_SERVICE_PORT"),
+		util.GetEnv("AUTH_SERVICE_HOST", "")+":"+util.GetEnv("AUTH_SERVICE_PORT", ""),
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // dev
 	)
 	if err != nil {
