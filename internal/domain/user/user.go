@@ -1,9 +1,14 @@
 package user
 
-import "time"
+import (
+	"time"
+
+	"github.com/qkitzero/user/internal/domain/identity"
+)
 
 type User interface {
 	ID() UserID
+	Identities() []identity.Identity
 	DisplayName() DisplayName
 	BirthDate() BirthDate
 	CreatedAt() time.Time
@@ -13,6 +18,7 @@ type User interface {
 
 type user struct {
 	id          UserID
+	identities  []identity.Identity
 	displayName DisplayName
 	birthDate   BirthDate
 	createdAt   time.Time
@@ -21,6 +27,10 @@ type user struct {
 
 func (u user) ID() UserID {
 	return u.id
+}
+
+func (u user) Identities() []identity.Identity {
+	return u.identities
 }
 
 func (u user) DisplayName() DisplayName {
@@ -46,6 +56,7 @@ func (u *user) Update(displayName DisplayName) {
 
 func NewUser(
 	id UserID,
+	identities []identity.Identity,
 	displayName DisplayName,
 	birthDate BirthDate,
 	createdAt time.Time,
@@ -53,6 +64,7 @@ func NewUser(
 ) User {
 	return &user{
 		id:          id,
+		identities:  identities,
 		displayName: displayName,
 		birthDate:   birthDate,
 		createdAt:   createdAt,
