@@ -21,7 +21,7 @@ func TestCreateUser(t *testing.T) {
 		name           string
 		success        bool
 		ctx            context.Context
-		userID         string
+		identityID     string
 		displayName    string
 		year           int32
 		month          int32
@@ -29,9 +29,9 @@ func TestCreateUser(t *testing.T) {
 		verifyTokenErr error
 		createUserErr  error
 	}{
-		{"success create user", true, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", 2000, 1, 1, nil, nil},
-		{"failure verify token error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", 2000, 1, 1, fmt.Errorf("verify token error"), nil},
-		{"failure create user error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", 2000, 1, 1, nil, fmt.Errorf("create user error")},
+		{"success create user", true, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, nil},
+		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, fmt.Errorf("verify token error"), nil},
+		{"failure create user error", false, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, fmt.Errorf("create user error")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -41,9 +41,9 @@ func TestCreateUser(t *testing.T) {
 			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
 			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
 			mockUser := mocksUser.NewMockUser(ctrl)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().CreateUser(tt.userID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
-			mockUserID, _ := user.NewUserID(tt.userID)
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
+			mockUserUsecase.EXPECT().CreateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
+			mockUserID := user.NewUserID()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 
 			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
@@ -74,13 +74,13 @@ func TestGetUser(t *testing.T) {
 		name           string
 		success        bool
 		ctx            context.Context
-		userID         string
+		identityID     string
 		verifyTokenErr error
 		getUserErr     error
 	}{
-		{"success get user", true, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", nil, nil},
-		{"failure verify token error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", fmt.Errorf("verify token error"), nil},
-		{"failure get user error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", nil, fmt.Errorf("get user error")},
+		{"success get user", true, context.Background(), "google-oauth2|000000000000000000000", nil, nil},
+		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", fmt.Errorf("verify token error"), nil},
+		{"failure get user error", false, context.Background(), "google-oauth2|000000000000000000000", nil, fmt.Errorf("get user error")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -90,11 +90,11 @@ func TestGetUser(t *testing.T) {
 			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
 			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
 			mockUser := mocksUser.NewMockUser(ctrl)
-			mockUserID, _ := user.NewUserID(tt.userID)
+			mockUserID := user.NewUserID()
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().GetUser(tt.userID).Return(mockUser, tt.getUserErr).AnyTimes()
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
+			mockUserUsecase.EXPECT().GetUser(tt.identityID).Return(mockUser, tt.getUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
@@ -137,9 +137,9 @@ func TestUpdateUser(t *testing.T) {
 			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
 			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
 			mockUser := mocksUser.NewMockUser(ctrl)
-			mockUserID, _ := user.NewUserID(tt.userID)
+			mockUserID, _ := user.NewUserIDFromString(tt.userID)
 			mockDisplayName, _ := user.NewDisplayName(tt.displayName)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.userID, tt.verifyTokenErr).AnyTimes()
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return("", tt.verifyTokenErr).AnyTimes()
 			mockUserUsecase.EXPECT().UpdateUser(tt.userID, tt.displayName).Return(mockUser, tt.updateUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
@@ -148,6 +148,7 @@ func TestUpdateUser(t *testing.T) {
 
 			req := &userv1.UpdateUserRequest{
 				DisplayName: tt.displayName,
+				UserId:      tt.userID,
 			}
 
 			_, err := userHandler.UpdateUser(tt.ctx, req)
