@@ -1,23 +1,20 @@
-package user
+package identity
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestNewUserIDFromString(t *testing.T) {
+func TestNewIdentityID(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name    string
 		success bool
 		id      string
 	}{
-		{"success new user id from string", true, "fe8c2263-bbac-4bb9-a41d-b04f5afc4425"},
-		{"failure empty user id", false, ""},
-		{"failure invalid user id", false, "0123456789"},
+		{"success new identity id", true, "google-oauth2|000000000000000000000"},
+		{"failure empty identity id", false, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewUserIDFromString(tt.id)
+			_, err := NewIdentityID(tt.id)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}

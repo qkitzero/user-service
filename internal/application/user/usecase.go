@@ -3,13 +3,14 @@ package user
 import (
 	"time"
 
+	"github.com/qkitzero/user/internal/domain/identity"
 	"github.com/qkitzero/user/internal/domain/user"
 )
 
 type UserUsecase interface {
-	CreateUser(userID, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error)
-	GetUser(userID string) (user.User, error)
-	UpdateUser(userID, displayName string) (user.User, error)
+	CreateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error)
+	GetUser(identityIDStr string) (user.User, error)
+	UpdateUser(userIDStr, displayNameStr string) (user.User, error)
 }
 
 type userUsecase struct {
@@ -20,61 +21,65 @@ func NewUserUsecase(repo user.UserRepository) UserUsecase {
 	return &userUsecase{repo: repo}
 }
 
-func (s *userUsecase) CreateUser(id, displayName string, birthYear, birthMonth, birthDay int32) (user.User, error) {
-	userID, err := user.NewUserID(id)
+func (s *userUsecase) CreateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error) {
+	identityID, err := identity.NewIdentityID(identityIDStr)
 	if err != nil {
 		return nil, err
 	}
 
-	userDisplayName, err := user.NewDisplayName(displayName)
+	identities := []identity.Identity{identity.NewIdentity(identityID)}
+
+	displayName, err := user.NewDisplayName(displayNameStr)
 	if err != nil {
 		return nil, err
 	}
 
-	userBirthDate, err := user.NewBirthDate(birthYear, birthMonth, birthDay)
+	birthDate, err := user.NewBirthDate(y, m, d)
 	if err != nil {
 		return nil, err
 	}
 
-	user := user.NewUser(userID, userDisplayName, userBirthDate, time.Now(), time.Now())
+	now := time.Now()
 
-	if err := s.repo.Create(user); err != nil {
+	u := user.NewUser(user.NewUserID(), identities, displayName, birthDate, now, now)
+
+	if err := s.repo.Create(u); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return u, nil
 }
 
-func (s *userUsecase) GetUser(id string) (user.User, error) {
-	userID, err := user.NewUserID(id)
+func (s *userUsecase) GetUser(identityIDStr string) (user.User, error) {
+	identityID, err := identity.NewIdentityID(identityIDStr)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.repo.Read(userID)
+	return s.repo.FindByIdentityID(identityID)
 }
 
-func (s *userUsecase) UpdateUser(id, displayName string) (user.User, error) {
-	userID, err := user.NewUserID(id)
+func (s *userUsecase) UpdateUser(userIDStr, displayNameStr string) (user.User, error) {
+	userID, err := user.NewUserIDFromString(userIDStr)
 	if err != nil {
 		return nil, err
 	}
 
-	existingUser, err := s.repo.Read(userID)
+	u, err := s.repo.FindByID(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	newDisplayName, err := user.NewDisplayName(displayName)
+	displayName, err := user.NewDisplayName(displayNameStr)
 	if err != nil {
 		return nil, err
 	}
 
-	existingUser.Update(newDisplayName)
+	u.Update(displayName)
 
-	if err := s.repo.Update(existingUser); err != nil {
+	if err := s.repo.Update(u); err != nil {
 		return nil, err
 	}
 
-	return existingUser, nil
+	return u, nil
 }
