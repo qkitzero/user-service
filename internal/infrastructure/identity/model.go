@@ -11,5 +11,5 @@ type IdentityModel struct {
 }
 
 func (IdentityModel) TableName() string {
-	return "identity"
+	return "identities"
 }
