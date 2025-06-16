@@ -1,0 +1,5 @@
+CREATE TABLE identities (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
