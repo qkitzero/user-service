@@ -27,24 +27,23 @@ services:
       start_period: 10s
 
   user-db:
-    image: mysql:8.0
+    image: postgres:17
     container_name: user-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "${DB_HOST_PORT}:${DB_CONTAINER_PORT}"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 10s
     volumes:
-      - user-db-data:/var/lib/mysql
+      - user-db-data:/var/lib/postgresql/data
 
   user-grpc-gateway:
     build:
