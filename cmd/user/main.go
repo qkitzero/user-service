@@ -22,11 +22,12 @@ import (
 
 func main() {
 	db, err := db.Init(
+		util.GetEnv("DB_HOST", ""),
 		util.GetEnv("DB_USER", ""),
 		util.GetEnv("DB_PASSWORD", ""),
-		util.GetEnv("DB_HOST", ""),
-		util.GetEnv("DB_PORT", ""),
 		util.GetEnv("DB_NAME", ""),
+		util.GetEnv("DB_PORT", ""),
+		util.GetEnv("DB_SSL_MODE", ""),
 	)
 	if err != nil {
 		log.Fatal(err)
