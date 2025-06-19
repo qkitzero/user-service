@@ -12,6 +12,7 @@ package mocks
 import (
 	reflect "reflect"
 
+	identity "github.com/qkitzero/user/internal/domain/identity"
 	user "github.com/qkitzero/user/internal/domain/user"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -54,19 +55,34 @@ func (mr *MockUserRepositoryMockRecorder) Create(user any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepository)(nil).Create), user)
 }
 
-// Read mocks base method.
-func (m *MockUserRepository) Read(userID user.UserID) (user.User, error) {
+// FindByID mocks base method.
+func (m *MockUserRepository) FindByID(userID user.UserID) (user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Read", userID)
+	ret := m.ctrl.Call(m, "FindByID", userID)
 	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read.
-func (mr *MockUserRepositoryMockRecorder) Read(userID any) *gomock.Call {
+// FindByID indicates an expected call of FindByID.
+func (mr *MockUserRepositoryMockRecorder) FindByID(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockUserRepository)(nil).Read), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockUserRepository)(nil).FindByID), userID)
+}
+
+// FindByIdentityID mocks base method.
+func (m *MockUserRepository) FindByIdentityID(identityID identity.IdentityID) (user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByIdentityID", identityID)
+	ret0, _ := ret[0].(user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIdentityID indicates an expected call of FindByIdentityID.
+func (mr *MockUserRepositoryMockRecorder) FindByIdentityID(identityID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIdentityID", reflect.TypeOf((*MockUserRepository)(nil).FindByIdentityID), identityID)
 }
 
 // Update mocks base method.

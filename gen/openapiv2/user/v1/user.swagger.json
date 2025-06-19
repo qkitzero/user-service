@@ -188,6 +188,9 @@
       "properties": {
         "displayName": {
           "type": "string"
+        },
+        "userId": {
+          "type": "string"
         }
       }
     },

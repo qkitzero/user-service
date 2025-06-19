@@ -10,7 +10,11 @@ type UserID struct {
 	uuid.UUID
 }
 
-func NewUserID(s string) (UserID, error) {
+func NewUserID() UserID {
+	return UserID{uuid.New()}
+}
+
+func NewUserIDFromString(s string) (UserID, error) {
 	id, err := uuid.Parse(s)
 	if err != nil {
 		return UserID{}, fmt.Errorf("invalid UUID format: %w", err)

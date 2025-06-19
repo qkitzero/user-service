@@ -27,12 +27,12 @@ func NewUserHandler(
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
-	userID, err := h.authUsecase.VerifyToken(ctx)
+	identityID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := h.userUsecase.CreateUser(userID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	user, err := h.userUsecase.CreateUser(identityID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +43,12 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
-	userID, err := h.authUsecase.VerifyToken(ctx)
+	identityID, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := h.userUsecase.GetUser(userID)
+	user, err := h.userUsecase.GetUser(identityID)
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +65,12 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UpdateUserResponse, error) {
-	userID, err := h.authUsecase.VerifyToken(ctx)
+	_, err := h.authUsecase.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := h.userUsecase.UpdateUser(userID, req.GetDisplayName())
+	user, err := h.userUsecase.UpdateUser(req.GetUserId(), req.GetDisplayName())
 	if err != nil {
 		return nil, err
 	}

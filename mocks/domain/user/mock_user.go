@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 	time "time"
 
+	identity "github.com/qkitzero/user/internal/domain/identity"
 	user "github.com/qkitzero/user/internal/domain/user"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -95,6 +96,20 @@ func (m *MockUser) ID() user.UserID {
 func (mr *MockUserMockRecorder) ID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ID", reflect.TypeOf((*MockUser)(nil).ID))
+}
+
+// Identities mocks base method.
+func (m *MockUser) Identities() []identity.Identity {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Identities")
+	ret0, _ := ret[0].([]identity.Identity)
+	return ret0
+}
+
+// Identities indicates an expected call of Identities.
+func (mr *MockUserMockRecorder) Identities() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Identities", reflect.TypeOf((*MockUser)(nil).Identities))
 }
 
 // Update mocks base method.
