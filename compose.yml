@@ -6,6 +6,7 @@ services:
     container_name: user-server
     restart: always
     environment:
+      - ENV=${ENV}
       - PORT=${SERVER_CONTAINER_PORT}
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
