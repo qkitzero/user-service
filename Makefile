@@ -17,7 +17,7 @@ mock-gen:
 	$(MOCK_GEN) -source=internal/application/user/usecase.go -destination=mocks/application/user/mock_usecase.go -package=mocks
 	$(MOCK_GEN) -source=internal/application/auth/usecase.go -destination=mocks/application/auth/mock_usecase.go -package=mocks
 
-MIGRATE=migrate -source file://internal/infrastructure/db/migrations -database "postgres://$(DB_USER):$(DB_PASSWORD)@localhost:$(DB_HOST_PORT)/$(DB_NAME)?sslmode=disable"
+MIGRATE=migrate -source file://internal/infrastructure/db/migrations -database "postgres://$(DB_USER):$(DB_PASSWORD)@localhost:$(DB_HOST_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)"
 
 migrate-up:
 	$(MIGRATE) up
