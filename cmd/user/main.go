@@ -5,10 +5,9 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/reflection"
 
 	authv1 "github.com/qkitzero/auth/gen/go/auth/v1"
 	userv1 "github.com/qkitzero/user/gen/go/user/v1"
@@ -40,7 +39,8 @@ func main() {
 
 	conn, err := grpc.NewClient(
 		util.GetEnv("AUTH_SERVICE_HOST", "")+":"+util.GetEnv("AUTH_SERVICE_PORT", ""),
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // dev
+		grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")), // prod
+		// grpc.WithTransportCredentials(insecure.NewCredentials()),                 // dev
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -62,7 +62,7 @@ func main() {
 
 	healthServer.SetServingStatus("user", grpc_health_v1.HealthCheckResponse_SERVING)
 
-	reflection.Register(server) // dev
+	// reflection.Register(server) // dev
 
 	if err = server.Serve(listener); err != nil {
 		log.Fatal(err)
