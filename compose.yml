@@ -54,7 +54,8 @@ services:
     container_name: user-grpc-gateway
     restart: always
     environment:
-      - GRPC_GATEWAY_PORT=${GRPC_GATEWAY_CONTAINER_PORT}
+      - ENV=${ENV}
+      - PORT=${GRPC_GATEWAY_CONTAINER_PORT}
       - SERVER_HOST=${SERVER_HOST}
       - SERVER_PORT=${SERVER_CONTAINER_PORT}
     ports:

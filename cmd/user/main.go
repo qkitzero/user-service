@@ -53,6 +53,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
 	server := grpc.NewServer()
 

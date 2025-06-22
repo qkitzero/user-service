@@ -7,6 +7,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
@@ -19,11 +20,17 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	conn, err := grpc.DialContext(
-		ctx,
-		util.GetEnv("SERVER_HOST", "")+":"+util.GetEnv("SERVER_PORT", ""),
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // dev
-	)
+	endpoint := util.GetEnv("SERVER_HOST", "") + ":" + util.GetEnv("SERVER_PORT", "")
+
+	var opts grpc.DialOption
+	switch util.GetEnv("ENV", "development") {
+	case "production":
+		opts = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))
+	default:
+		opts = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	conn, err := grpc.NewClient(endpoint, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,14 +41,12 @@ func main() {
 	mux := runtime.NewServeMux(
 		runtime.WithHealthzEndpoint(healthClient),
 	)
-	endpoint := util.GetEnv("SERVER_HOST", "") + ":" + util.GetEnv("SERVER_PORT", "")
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, endpoint, opts); err != nil {
+	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, endpoint, []grpc.DialOption{opts}); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := http.ListenAndServe(":"+util.GetEnv("GRPC_GATEWAY_PORT", ""), mux); err != nil {
+	if err := http.ListenAndServe(":"+util.GetEnv("PORT", ""), mux); err != nil {
 		log.Fatal(err)
 	}
 }
