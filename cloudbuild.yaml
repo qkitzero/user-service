@@ -32,8 +32,42 @@ steps:
         "ENV=USER_SERVICE_ENV:latest,DB_USER=USER_SERVICE_DB_USER:latest,DB_PASSWORD=USER_SERVICE_DB_PASSWORD:latest,DB_HOST=USER_SERVICE_DB_HOST:latest,DB_PORT=USER_SERVICE_DB_PORT:latest,DB_NAME=USER_SERVICE_DB_NAME:latest,DB_SSL_MODE=USER_SERVICE_DB_SSL_MODE:latest,AUTH_SERVICE_HOST=USER_SERVICE_AUTH_SERVICE_HOST:latest,AUTH_SERVICE_PORT=USER_SERVICE_AUTH_SERVICE_PORT:latest",
       ]
 
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA",
+        "-f",
+        "./build/gateway/Dockerfile",
+        ".",
+      ]
+
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA",
+      ]
+
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "user-service-gateway",
+        "--image",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA",
+        "--region",
+        "us-central1",
+        "--update-secrets",
+        "ENV=USER_SERVICE_ENV:latest,SERVER_HOST=USER_SERVICE_SERVER_HOST:latest,SERVER_PORT=USER_SERVICE_SERVER_PORT:latest",
+      ]
+
 images:
   - "us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA"
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA"
 
 options:
   logging: CLOUD_LOGGING_ONLY
