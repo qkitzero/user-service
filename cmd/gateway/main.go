@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := http.ListenAndServe(":"+util.GetEnv("GRPC_GATEWAY_PORT", ""), mux); err != nil {
+	if err := http.ListenAndServe(":"+util.GetEnv("PORT", ""), mux); err != nil {
 		log.Fatal(err)
 	}
 }
