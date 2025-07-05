@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"time"
 
 	"github.com/qkitzero/user/internal/domain/identity"
@@ -51,12 +52,20 @@ func (s *userUsecase) CreateUser(identityIDStr, displayNameStr string, y, m, d i
 }
 
 func (s *userUsecase) GetUser(identityIDStr string) (user.User, error) {
-	identityID, err := identity.NewIdentityID(identityIDStr)
+	id, err := identity.NewIdentityID(identityIDStr)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.repo.FindByIdentityID(identityID)
+	u, err := s.repo.FindByIdentityID(id)
+	if errors.Is(err, identity.ErrIdentityNotFound) {
+		return nil, user.ErrUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }
 
 func (s *userUsecase) UpdateUser(userIDStr, displayNameStr string) (user.User, error) {

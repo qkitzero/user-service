@@ -81,6 +81,7 @@ func TestGetUser(t *testing.T) {
 		{"success get user", true, context.Background(), "google-oauth2|000000000000000000000", nil, nil},
 		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", fmt.Errorf("verify token error"), nil},
 		{"failure get user error", false, context.Background(), "google-oauth2|000000000000000000000", nil, fmt.Errorf("get user error")},
+		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", nil, user.ErrUserNotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
