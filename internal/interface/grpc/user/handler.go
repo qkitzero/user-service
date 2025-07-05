@@ -2,23 +2,27 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"google.golang.org/genproto/googleapis/type/date"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	userv1 "github.com/qkitzero/user/gen/go/user/v1"
-	"github.com/qkitzero/user/internal/application/auth"
-	"github.com/qkitzero/user/internal/application/user"
+	appauth "github.com/qkitzero/user/internal/application/auth"
+	appuser "github.com/qkitzero/user/internal/application/user"
+	domainuser "github.com/qkitzero/user/internal/domain/user"
 )
 
 type UserHandler struct {
 	userv1.UnimplementedUserServiceServer
-	authUsecase auth.AuthUsecase
-	userUsecase user.UserUsecase
+	authUsecase appauth.AuthUsecase
+	userUsecase appuser.UserUsecase
 }
 
 func NewUserHandler(
-	authUsecase auth.AuthUsecase,
-	userUsecase user.UserUsecase,
+	authUsecase appauth.AuthUsecase,
+	userUsecase appuser.UserUsecase,
 ) *UserHandler {
 	return &UserHandler{
 		authUsecase: authUsecase,
@@ -49,6 +53,9 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 	}
 
 	user, err := h.userUsecase.GetUser(identityID)
+	if errors.Is(err, domainuser.ErrUserNotFound) {
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
 	if err != nil {
 		return nil, err
 	}
