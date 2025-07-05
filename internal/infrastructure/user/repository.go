@@ -1,10 +1,13 @@
 package user
 
 import (
+	"errors"
+
+	"gorm.io/gorm"
+
 	"github.com/qkitzero/user/internal/domain/identity"
 	"github.com/qkitzero/user/internal/domain/user"
-	infrastructure_identity "github.com/qkitzero/user/internal/infrastructure/identity"
-	"gorm.io/gorm"
+	infraidentity "github.com/qkitzero/user/internal/infrastructure/identity"
 )
 
 type userRepository struct {
@@ -29,9 +32,9 @@ func (r *userRepository) Create(u user.User) error {
 			return err
 		}
 
-		var identityModels []infrastructure_identity.IdentityModel
+		var identityModels []infraidentity.IdentityModel
 		for _, i := range u.Identities() {
-			identityModels = append(identityModels, infrastructure_identity.IdentityModel{
+			identityModels = append(identityModels, infraidentity.IdentityModel{
 				ID:     i.ID(),
 				UserID: u.ID(),
 			})
@@ -46,17 +49,25 @@ func (r *userRepository) Create(u user.User) error {
 }
 
 func (r *userRepository) FindByIdentityID(identityID identity.IdentityID) (user.User, error) {
-	var identityModel infrastructure_identity.IdentityModel
-	if err := r.db.Where("id = ?", identityID).First(&identityModel).Error; err != nil {
+	var identityModel infraidentity.IdentityModel
+	err := r.db.Where("id = ?", identityID).First(&identityModel).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, identity.ErrIdentityNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 
 	var userModel UserModel
-	if err := r.db.Where("id = ?", identityModel.UserID).First(&userModel).Error; err != nil {
+	err = r.db.Where("id = ?", identityModel.UserID).First(&userModel).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, user.ErrUserNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 
-	var identityModels []infrastructure_identity.IdentityModel
+	var identityModels []infraidentity.IdentityModel
 	if err := r.db.Where("user_id = ?", userModel.ID).Find(&identityModels).Error; err != nil {
 		return nil, err
 	}
@@ -78,11 +89,15 @@ func (r *userRepository) FindByIdentityID(identityID identity.IdentityID) (user.
 
 func (r *userRepository) FindByID(userID user.UserID) (user.User, error) {
 	var userModel UserModel
-	if err := r.db.Where("id = ?", userID).First(&userModel).Error; err != nil {
+	err := r.db.Where("id = ?", userID).First(&userModel).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, user.ErrUserNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 
-	var identityModels []infrastructure_identity.IdentityModel
+	var identityModels []infraidentity.IdentityModel
 	if err := r.db.Where("user_id = ?", userModel.ID).Find(&identityModels).Error; err != nil {
 		return nil, err
 	}
