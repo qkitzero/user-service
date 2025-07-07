@@ -18,19 +18,16 @@ steps:
       ]
 
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: gcloud
+    entrypoint: "bash"
     args:
-      [
-        "run",
-        "deploy",
-        "user-service",
-        "--image",
-        "us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA",
-        "--region",
-        "us-central1",
-        "--update-secrets",
-        "ENV=USER_SERVICE_ENV:latest,DB_USER=USER_SERVICE_DB_USER:latest,DB_PASSWORD=USER_SERVICE_DB_PASSWORD:latest,DB_HOST=USER_SERVICE_DB_HOST:latest,DB_PORT=USER_SERVICE_DB_PORT:latest,DB_NAME=USER_SERVICE_DB_NAME:latest,DB_SSL_MODE=USER_SERVICE_DB_SSL_MODE:latest,AUTH_SERVICE_HOST=USER_SERVICE_AUTH_SERVICE_HOST:latest,AUTH_SERVICE_PORT=USER_SERVICE_AUTH_SERVICE_PORT:latest",
-      ]
+      - "-c"
+      - |
+        gcloud secrets versions access latest --secret=user-service-env-file > .env
+        gcloud run deploy user-service \
+          --image=us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA \
+          --region=us-central1 \
+          --platform=managed \
+          --set-env-vars=$(cat .env | xargs | sed 's/ /,/g')
 
   - name: "gcr.io/cloud-builders/docker"
     args:
@@ -51,19 +48,16 @@ steps:
       ]
 
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: gcloud
+    entrypoint: "bash"
     args:
-      [
-        "run",
-        "deploy",
-        "user-service-gateway",
-        "--image",
-        "us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA",
-        "--region",
-        "us-central1",
-        "--update-secrets",
-        "ENV=USER_SERVICE_ENV:latest,SERVER_HOST=USER_SERVICE_SERVER_HOST:latest,SERVER_PORT=USER_SERVICE_SERVER_PORT:latest",
-      ]
+      - "-c"
+      - |
+        gcloud secrets versions access latest --secret=user-service-gateway-env-file > .env
+        gcloud run deploy user-service-gateway \
+          --image=us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA \
+          --region=us-central1 \
+          --platform=managed \
+          --set-env-vars=$(cat .env | xargs | sed 's/ /,/g')
 
 images:
   - "us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA"

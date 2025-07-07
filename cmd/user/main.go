@@ -13,11 +13,11 @@ import (
 
 	authv1 "github.com/qkitzero/auth/gen/go/auth/v1"
 	userv1 "github.com/qkitzero/user/gen/go/user/v1"
-	application_user "github.com/qkitzero/user/internal/application/user"
-	api_auth "github.com/qkitzero/user/internal/infrastructure/api/auth"
+	appuser "github.com/qkitzero/user/internal/application/user"
+	apiauth "github.com/qkitzero/user/internal/infrastructure/api/auth"
 	"github.com/qkitzero/user/internal/infrastructure/db"
-	infrastructure_user "github.com/qkitzero/user/internal/infrastructure/user"
-	interface_user "github.com/qkitzero/user/internal/interface/grpc/user"
+	infrauser "github.com/qkitzero/user/internal/infrastructure/user"
+	grpcuser "github.com/qkitzero/user/internal/interface/grpc/user"
 	"github.com/qkitzero/user/util"
 )
 
@@ -58,13 +58,13 @@ func main() {
 	server := grpc.NewServer()
 
 	authServiceClient := authv1.NewAuthServiceClient(conn)
-	userRepository := infrastructure_user.NewUserRepository(db)
+	userRepository := infrauser.NewUserRepository(db)
 
-	authUsecase := api_auth.NewAuthUsecase(authServiceClient)
-	userUsecase := application_user.NewUserUsecase(userRepository)
+	authUsecase := apiauth.NewAuthUsecase(authServiceClient)
+	userUsecase := appuser.NewUserUsecase(userRepository)
 
 	healthServer := health.NewServer()
-	userHandler := interface_user.NewUserHandler(authUsecase, userUsecase)
+	userHandler := grpcuser.NewUserHandler(authUsecase, userUsecase)
 
 	grpc_health_v1.RegisterHealthServer(server, healthServer)
 	userv1.RegisterUserServiceServer(server, userHandler)
