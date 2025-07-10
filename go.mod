@@ -3,6 +3,7 @@ module github.com/qkitzero/user
 go 1.24.3
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/qkitzero/auth v1.1.0
