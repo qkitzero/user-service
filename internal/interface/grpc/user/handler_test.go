@@ -10,9 +10,9 @@ import (
 
 	userv1 "github.com/qkitzero/user/gen/go/user/v1"
 	"github.com/qkitzero/user/internal/domain/user"
-	mocksAuthUsecase "github.com/qkitzero/user/mocks/application/auth"
-	mocksUserUsecase "github.com/qkitzero/user/mocks/application/user"
-	mocksUser "github.com/qkitzero/user/mocks/domain/user"
+	mocksappauth "github.com/qkitzero/user/mocks/application/auth"
+	mocksappuser "github.com/qkitzero/user/mocks/application/user"
+	mocksuser "github.com/qkitzero/user/mocks/domain/user"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -38,9 +38,9 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
-			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
-			mockUser := mocksUser.NewMockUser(ctrl)
+			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
+			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
+			mockUser := mocksuser.NewMockUser(ctrl)
 			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
 			mockUserUsecase.EXPECT().CreateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
 			mockUserID := user.NewUserID()
@@ -88,9 +88,9 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
-			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
-			mockUser := mocksUser.NewMockUser(ctrl)
+			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
+			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
+			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID := user.NewUserID()
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
@@ -135,9 +135,9 @@ func TestUpdateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthUsecase := mocksAuthUsecase.NewMockAuthUsecase(ctrl)
-			mockUserUsecase := mocksUserUsecase.NewMockUserUsecase(ctrl)
-			mockUser := mocksUser.NewMockUser(ctrl)
+			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
+			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
+			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID, _ := user.NewUserIDFromString(tt.userID)
 			mockDisplayName, _ := user.NewDisplayName(tt.displayName)
 			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return("", tt.verifyTokenErr).AnyTimes()
