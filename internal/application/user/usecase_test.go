@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/qkitzero/user/internal/domain/identity"
-	mocks "github.com/qkitzero/user/mocks/domain/user"
+	"github.com/qkitzero/user-service/internal/domain/identity"
+	mocks "github.com/qkitzero/user-service/mocks/domain/user"
 )
 
 func TestCreateUser(t *testing.T) {

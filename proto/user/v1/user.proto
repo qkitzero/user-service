@@ -5,7 +5,7 @@ package user.v1;
 import "google/api/annotations.proto";
 import "google/type/date.proto";
 
-option go_package = "github.com/qkitzero/user/gen/go/user/v1";
+option go_package = "github.com/qkitzero/user-service/gen/go/user/v1";
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {

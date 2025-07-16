@@ -8,10 +8,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	userv1 "github.com/qkitzero/user/gen/go/user/v1"
-	appauth "github.com/qkitzero/user/internal/application/auth"
-	appuser "github.com/qkitzero/user/internal/application/user"
-	domainuser "github.com/qkitzero/user/internal/domain/user"
+	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
+	appauth "github.com/qkitzero/user-service/internal/application/auth"
+	appuser "github.com/qkitzero/user-service/internal/application/user"
+	domainuser "github.com/qkitzero/user-service/internal/domain/user"
 )
 
 type UserHandler struct {

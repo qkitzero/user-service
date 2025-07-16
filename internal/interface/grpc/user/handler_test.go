@@ -8,11 +8,11 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/genproto/googleapis/type/date"
 
-	userv1 "github.com/qkitzero/user/gen/go/user/v1"
-	"github.com/qkitzero/user/internal/domain/user"
-	mocksappauth "github.com/qkitzero/user/mocks/application/auth"
-	mocksappuser "github.com/qkitzero/user/mocks/application/user"
-	mocksuser "github.com/qkitzero/user/mocks/domain/user"
+	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
+	"github.com/qkitzero/user-service/internal/domain/user"
+	mocksappauth "github.com/qkitzero/user-service/mocks/application/auth"
+	mocksappuser "github.com/qkitzero/user-service/mocks/application/user"
+	mocksuser "github.com/qkitzero/user-service/mocks/domain/user"
 )
 
 func TestCreateUser(t *testing.T) {

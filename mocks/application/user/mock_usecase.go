@@ -12,7 +12,7 @@ package mocks
 import (
 	reflect "reflect"
 
-	user "github.com/qkitzero/user/internal/domain/user"
+	user "github.com/qkitzero/user-service/internal/domain/user"
 	gomock "go.uber.org/mock/gomock"
 )
 

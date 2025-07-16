@@ -12,11 +12,11 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/qkitzero/user/internal/domain/identity"
-	"github.com/qkitzero/user/internal/domain/user"
-	mocksidentity "github.com/qkitzero/user/mocks/domain/identity"
-	mocksuser "github.com/qkitzero/user/mocks/domain/user"
-	"github.com/qkitzero/user/testutil"
+	"github.com/qkitzero/user-service/internal/domain/identity"
+	"github.com/qkitzero/user-service/internal/domain/user"
+	mocksidentity "github.com/qkitzero/user-service/mocks/domain/identity"
+	mocksuser "github.com/qkitzero/user-service/mocks/domain/user"
+	"github.com/qkitzero/user-service/testutil"
 )
 
 func TestCreate(t *testing.T) {

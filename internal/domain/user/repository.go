@@ -1,6 +1,6 @@
 package user
 
-import "github.com/qkitzero/user/internal/domain/identity"
+import "github.com/qkitzero/user-service/internal/domain/identity"
 
 type UserRepository interface {
 	Create(user User) error
