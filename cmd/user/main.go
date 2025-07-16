@@ -11,14 +11,14 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
-	authv1 "github.com/qkitzero/auth/gen/go/auth/v1"
-	userv1 "github.com/qkitzero/user/gen/go/user/v1"
-	appuser "github.com/qkitzero/user/internal/application/user"
-	apiauth "github.com/qkitzero/user/internal/infrastructure/api/auth"
-	"github.com/qkitzero/user/internal/infrastructure/db"
-	infrauser "github.com/qkitzero/user/internal/infrastructure/user"
-	grpcuser "github.com/qkitzero/user/internal/interface/grpc/user"
-	"github.com/qkitzero/user/util"
+	authv1 "github.com/qkitzero/auth-service/gen/go/auth/v1"
+	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
+	appuser "github.com/qkitzero/user-service/internal/application/user"
+	apiauth "github.com/qkitzero/user-service/internal/infrastructure/api/auth"
+	"github.com/qkitzero/user-service/internal/infrastructure/db"
+	infrauser "github.com/qkitzero/user-service/internal/infrastructure/user"
+	grpcuser "github.com/qkitzero/user-service/internal/interface/grpc/user"
+	"github.com/qkitzero/user-service/util"
 )
 
 func main() {

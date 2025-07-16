@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
-	userv1 "github.com/qkitzero/user/gen/go/user/v1"
-	"github.com/qkitzero/user/util"
+	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
+	"github.com/qkitzero/user-service/util"
 )
 
 func main() {

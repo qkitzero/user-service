@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qkitzero/user/internal/domain/identity"
+	"github.com/qkitzero/user-service/internal/domain/identity"
 )
 
 func TestNewUser(t *testing.T) {
@@ -42,7 +42,10 @@ func TestNewUser(t *testing.T) {
 		{"success new user", true, id, identities, displayName, birthDate, time.Now(), time.Now()},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			user := NewUser(tt.id, tt.identities, tt.displayName, tt.birthDate, tt.createdAt, tt.updatedAt)
 			if tt.success && user.ID() != tt.id {
 				t.Errorf("ID() = %v, want %v", user.ID(), tt.id)
@@ -101,7 +104,10 @@ func TestUpdateUser(t *testing.T) {
 		{"success update user", true, user, updatedDisplayName},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			tt.user.Update(tt.updatedDisplayName)
 			if tt.success && tt.user.DisplayName() != tt.updatedDisplayName {
 				t.Errorf("DisplayName() = %v, want %v", tt.user.DisplayName(), tt.updatedDisplayName)

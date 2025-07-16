@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/qkitzero/user/internal/domain/identity"
-	"github.com/qkitzero/user/internal/domain/user"
+	"github.com/qkitzero/user-service/internal/domain/identity"
+	"github.com/qkitzero/user-service/internal/domain/user"
 )
 
 type UserUsecase interface {

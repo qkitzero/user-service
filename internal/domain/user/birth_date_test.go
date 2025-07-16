@@ -17,7 +17,10 @@ func TestNewBirthDate(t *testing.T) {
 		{"failure invalid birth date", false, 2000, 2, 30},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			_, err := NewBirthDate(tt.year, tt.month, tt.day)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)

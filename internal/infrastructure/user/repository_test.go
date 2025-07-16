@@ -12,11 +12,11 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/qkitzero/user/internal/domain/identity"
-	"github.com/qkitzero/user/internal/domain/user"
-	mocksidentity "github.com/qkitzero/user/mocks/domain/identity"
-	mocksuser "github.com/qkitzero/user/mocks/domain/user"
-	"github.com/qkitzero/user/testutil"
+	"github.com/qkitzero/user-service/internal/domain/identity"
+	"github.com/qkitzero/user-service/internal/domain/user"
+	mocksidentity "github.com/qkitzero/user-service/mocks/domain/identity"
+	mocksuser "github.com/qkitzero/user-service/mocks/domain/user"
+	"github.com/qkitzero/user-service/testutil"
 )
 
 func TestCreate(t *testing.T) {
@@ -75,7 +75,10 @@ func TestCreate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			sqlDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Errorf("failed to new sqlmock: %s", err)
@@ -222,7 +225,10 @@ func TestFindByIdentityID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			sqlDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Errorf("failed to new sqlmock: %s", err)
@@ -316,7 +322,10 @@ func TestFindByID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			sqlDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Errorf("failed to new sqlmock: %s", err)
@@ -381,7 +390,10 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			sqlDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Errorf("failed to new sqlmock: %s", err)

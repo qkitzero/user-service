@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/qkitzero/user/internal/domain/identity"
-	mocks "github.com/qkitzero/user/mocks/domain/user"
+	"github.com/qkitzero/user-service/internal/domain/identity"
+	mocks "github.com/qkitzero/user-service/mocks/domain/user"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -29,7 +29,10 @@ func TestCreateUser(t *testing.T) {
 		{"failure create error", false, "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, errors.New("create error")},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -63,7 +66,10 @@ func TestGetUser(t *testing.T) {
 		{"failure identity not found", false, "google-oauth2|000000000000000000000", identity.ErrIdentityNotFound},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -101,7 +107,10 @@ func TestUpdateUser(t *testing.T) {
 		{"failure update error", false, "fe8c2263-bbac-4bb9-a41d-b04f5afc4425", "test user", nil, errors.New("update error")},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
