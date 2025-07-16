@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qkitzero/user/internal/domain/identity"
+	"github.com/qkitzero/user-service/internal/domain/identity"
 )
 
 func TestNewUser(t *testing.T) {

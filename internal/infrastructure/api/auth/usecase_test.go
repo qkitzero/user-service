@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	authv1 "github.com/qkitzero/auth/gen/go/auth/v1"
-	mocks "github.com/qkitzero/user/mocks/external/auth/v1"
+	authv1 "github.com/qkitzero/auth-service/gen/go/auth/v1"
+	mocks "github.com/qkitzero/user-service/mocks/external/auth/v1"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/metadata"
 )

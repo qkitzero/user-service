@@ -13,8 +13,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	identity "github.com/qkitzero/user/internal/domain/identity"
-	user "github.com/qkitzero/user/internal/domain/user"
+	identity "github.com/qkitzero/user-service/internal/domain/identity"
+	user "github.com/qkitzero/user-service/internal/domain/user"
 	gomock "go.uber.org/mock/gomock"
 )
 

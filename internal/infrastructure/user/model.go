@@ -3,7 +3,7 @@ package user
 import (
 	"time"
 
-	"github.com/qkitzero/user/internal/domain/user"
+	"github.com/qkitzero/user-service/internal/domain/user"
 )
 
 type UserModel struct {

@@ -5,9 +5,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/qkitzero/user/internal/domain/identity"
-	"github.com/qkitzero/user/internal/domain/user"
-	infraidentity "github.com/qkitzero/user/internal/infrastructure/identity"
+	"github.com/qkitzero/user-service/internal/domain/identity"
+	"github.com/qkitzero/user-service/internal/domain/user"
+	infraidentity "github.com/qkitzero/user-service/internal/infrastructure/identity"
 )
 
 type userRepository struct {
