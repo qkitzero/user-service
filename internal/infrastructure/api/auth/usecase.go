@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	authv1 "github.com/qkitzero/auth/gen/go/auth/v1"
+	authv1 "github.com/qkitzero/auth-service/gen/go/auth/v1"
 	"github.com/qkitzero/user-service/internal/application/auth"
 	"google.golang.org/grpc/metadata"
 )
