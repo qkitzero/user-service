@@ -34,7 +34,10 @@ func TestCreateUser(t *testing.T) {
 		{"failure create user error", false, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, fmt.Errorf("create user error")},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -84,7 +87,10 @@ func TestGetUser(t *testing.T) {
 		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", nil, user.ErrUserNotFound},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -131,7 +137,10 @@ func TestUpdateUser(t *testing.T) {
 		{"failure update user error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", nil, fmt.Errorf("update user error")},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 

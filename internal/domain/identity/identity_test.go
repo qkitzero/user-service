@@ -18,7 +18,10 @@ func TestNewIdentity(t *testing.T) {
 		{"success new identity", true, id},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			identity := NewIdentity(tt.id)
 			if tt.success && identity.ID() != tt.id {
 				t.Errorf("ID() = %v, want %v", identity.ID(), tt.id)
