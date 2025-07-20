@@ -22,8 +22,9 @@ func TestNewDisplayName(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
+
 			if tt.success && displayName.String() != tt.displayName {
 				t.Errorf("String() = %v, want %v", displayName.String(), tt.displayName)
 			}
