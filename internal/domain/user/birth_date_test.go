@@ -1,6 +1,10 @@
 package user
 
-import "testing"
+import (
+	"database/sql/driver"
+	"testing"
+	"time"
+)
 
 func TestNewBirthDate(t *testing.T) {
 	t.Parallel()
@@ -27,6 +31,71 @@ func TestNewBirthDate(t *testing.T) {
 			}
 			if !tt.success && err == nil {
 				t.Errorf("expected error, but got nil")
+			}
+		})
+	}
+}
+
+func TestBirthScan(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		success bool
+		value   any
+	}{
+		{"success", true, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
+		{"failure invalid type", false, "invalid type"},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			birthDate, err := NewBirthDate(2000, 1, 1)
+			if err != nil {
+				t.Errorf("failed to new birth date: %v", err)
+			}
+
+			err = birthDate.Scan(tt.value)
+			if tt.success && err != nil {
+				t.Errorf("expected no error, but got %v", err)
+			}
+			if !tt.success && err == nil {
+				t.Errorf("expected error, but got nil")
+			}
+		})
+	}
+}
+
+func TestValue(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		success  bool
+		expected driver.Value
+	}{
+		{"success", true, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			birthDate, err := NewBirthDate(2000, 1, 1)
+			if err != nil {
+				t.Errorf("failed to new birth date: %v", err)
+			}
+
+			value, err := birthDate.Value()
+			if tt.success && err != nil {
+				t.Errorf("expected no error, but got %v", err)
+			}
+			if !tt.success && err == nil {
+				t.Errorf("expected error, but got nil")
+			}
+
+			if tt.success && value != tt.expected {
+				t.Errorf("expected %v, but got %v", tt.expected, value)
 			}
 		})
 	}

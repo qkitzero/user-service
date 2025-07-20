@@ -24,7 +24,7 @@ func (b BirthDate) Value() (driver.Value, error) {
 }
 
 func NewBirthDate(year, month, day int32) (BirthDate, error) {
-	birthDate := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, 0, time.Local)
+	birthDate := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, 0, time.UTC)
 
 	if birthDate.Year() != int(year) || birthDate.Month() != time.Month(month) || birthDate.Day() != int(day) {
 		return BirthDate{}, fmt.Errorf("invalid birth date: %d-%02d-%02d", year, month, day)
