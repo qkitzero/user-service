@@ -11,7 +11,8 @@ type UserID struct {
 }
 
 func NewUserID() UserID {
-	return UserID{uuid.New()}
+	id := uuid.New()
+	return UserID{id}
 }
 
 func NewUserIDFromString(s string) (UserID, error) {

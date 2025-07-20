@@ -4,6 +4,27 @@ import (
 	"testing"
 )
 
+func TestNewUserID(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		success bool
+	}{
+		{"success new user id", true},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			id := NewUserID()
+			if tt.success && id.String() == "" {
+				t.Errorf("expected valid user id string, but got empty string")
+			}
+		})
+	}
+}
+
 func TestNewUserIDFromString(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
