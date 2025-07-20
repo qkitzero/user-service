@@ -65,7 +65,7 @@ func TestCreateUser(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 		})
 	}
@@ -115,7 +115,7 @@ func TestGetUser(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 		})
 	}
@@ -166,7 +166,7 @@ func TestUpdateUser(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 		})
 	}
