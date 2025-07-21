@@ -112,7 +112,7 @@ func TestCreate(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -249,7 +249,7 @@ func TestFindByIdentityID(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -345,7 +345,7 @@ func TestFindByID(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -426,7 +426,7 @@ func TestUpdate(t *testing.T) {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
-				t.Errorf("expected error but got nil")
+				t.Errorf("expected error, but got nil")
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
