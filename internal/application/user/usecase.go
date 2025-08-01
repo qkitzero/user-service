@@ -11,7 +11,7 @@ import (
 type UserUsecase interface {
 	CreateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error)
 	GetUser(identityIDStr string) (user.User, error)
-	UpdateUser(userIDStr, displayNameStr string) (user.User, error)
+	UpdateUser(identityIDStr, displayNameStr string) (user.User, error)
 }
 
 type userUsecase struct {
@@ -68,13 +68,16 @@ func (s *userUsecase) GetUser(identityIDStr string) (user.User, error) {
 	return u, nil
 }
 
-func (s *userUsecase) UpdateUser(userIDStr, displayNameStr string) (user.User, error) {
-	userID, err := user.NewUserIDFromString(userIDStr)
+func (s *userUsecase) UpdateUser(identityIDStr, displayNameStr string) (user.User, error) {
+	id, err := identity.NewIdentityID(identityIDStr)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := s.repo.FindByID(userID)
+	u, err := s.repo.FindByIdentityID(id)
+	if errors.Is(err, identity.ErrIdentityNotFound) {
+		return nil, user.ErrUserNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
