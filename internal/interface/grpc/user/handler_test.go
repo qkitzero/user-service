@@ -127,14 +127,15 @@ func TestUpdateUser(t *testing.T) {
 		name           string
 		success        bool
 		ctx            context.Context
-		userID         string
+		identityID     string
 		displayName    string
 		verifyTokenErr error
 		updateUserErr  error
 	}{
-		{"success update user", true, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", nil, nil},
-		{"failure verify token error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", fmt.Errorf("verify token error"), nil},
-		{"failure update user error", false, context.Background(), "0800819d-746e-4cb9-b561-6841b98cb19c", "test user", nil, fmt.Errorf("update user error")},
+		{"success update user", true, context.Background(), "google-oauth2|000000000000000000000", "updated test user", nil, nil},
+		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", fmt.Errorf("verify token error"), nil},
+		{"failure update user error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", nil, fmt.Errorf("update user error")},
+		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", nil, user.ErrUserNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -147,10 +148,10 @@ func TestUpdateUser(t *testing.T) {
 			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
-			mockUserID, _ := user.NewUserIDFromString(tt.userID)
-			mockDisplayName, _ := user.NewDisplayName(tt.displayName)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return("", tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().UpdateUser(tt.userID, tt.displayName).Return(mockUser, tt.updateUserErr).AnyTimes()
+			mockUserID, _ := user.NewUserIDFromString("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
+			mockDisplayName, _ := user.NewDisplayName("test user")
+			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
+			mockUserUsecase.EXPECT().UpdateUser(tt.identityID, tt.displayName).Return(mockUser, tt.updateUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 
@@ -158,7 +159,6 @@ func TestUpdateUser(t *testing.T) {
 
 			req := &userv1.UpdateUserRequest{
 				DisplayName: tt.displayName,
-				UserId:      tt.userID,
 			}
 
 			_, err := userHandler.UpdateUser(tt.ctx, req)
