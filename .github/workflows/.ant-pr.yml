@@ -1,0 +1,3 @@
+rules:
+  "internal/": 50
+  "": 50
