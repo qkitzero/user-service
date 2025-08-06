@@ -94,23 +94,31 @@ func TestUpdateUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to new display name: %v", err)
 	}
+	updatedBirthDate, err := NewBirthDate(2000, 2, 2)
+	if err != nil {
+		t.Errorf("failed to new birth date: %v", err)
+	}
 	user := NewUser(id, identities, displayName, birthDate, time.Now(), time.Now())
 	tests := []struct {
 		name               string
 		success            bool
 		user               User
 		updatedDisplayName DisplayName
+		updatedBirthDate   BirthDate
 	}{
-		{"success update user", true, user, updatedDisplayName},
+		{"success update user", true, user, updatedDisplayName, updatedBirthDate},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			tt.user.Update(tt.updatedDisplayName)
+			tt.user.Update(tt.updatedDisplayName, tt.updatedBirthDate)
 			if tt.success && tt.user.DisplayName() != tt.updatedDisplayName {
 				t.Errorf("DisplayName() = %v, want %v", tt.user.DisplayName(), tt.updatedDisplayName)
+			}
+			if tt.success && tt.user.BirthDate() != tt.updatedBirthDate {
+				t.Errorf("BirthDate() = %v, want %v", tt.user.BirthDate(), tt.updatedBirthDate)
 			}
 			if tt.success && !tt.user.CreatedAt().Before(tt.user.UpdatedAt()) {
 				t.Errorf("CreatedAt() = %v, UpdatedAt() = %v, want CreatedAt < UpdatedAt", tt.user.CreatedAt(), tt.user.UpdatedAt())
