@@ -129,13 +129,16 @@ func TestUpdateUser(t *testing.T) {
 		ctx            context.Context
 		identityID     string
 		displayName    string
+		year           int32
+		month          int32
+		day            int32
 		verifyTokenErr error
 		updateUserErr  error
 	}{
-		{"success update user", true, context.Background(), "google-oauth2|000000000000000000000", "updated test user", nil, nil},
-		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", fmt.Errorf("verify token error"), nil},
-		{"failure update user error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", nil, fmt.Errorf("update user error")},
-		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", nil, user.ErrUserNotFound},
+		{"success update user", true, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, nil, nil},
+		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, fmt.Errorf("verify token error"), nil},
+		{"failure update user error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, nil, fmt.Errorf("update user error")},
+		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, nil, user.ErrUserNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -150,15 +153,22 @@ func TestUpdateUser(t *testing.T) {
 			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID, _ := user.NewUserIDFromString("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
 			mockDisplayName, _ := user.NewDisplayName("test user")
+			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
 			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().UpdateUser(tt.identityID, tt.displayName).Return(mockUser, tt.updateUserErr).AnyTimes()
+			mockUserUsecase.EXPECT().UpdateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.updateUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
+			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
 
 			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
 
 			req := &userv1.UpdateUserRequest{
 				DisplayName: tt.displayName,
+				BirthDate: &date.Date{
+					Year:  tt.year,
+					Month: tt.month,
+					Day:   tt.day,
+				},
 			}
 
 			_, err := userHandler.UpdateUser(tt.ctx, req)
