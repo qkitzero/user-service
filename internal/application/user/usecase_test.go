@@ -97,15 +97,19 @@ func TestUpdateUser(t *testing.T) {
 		success             bool
 		identityID          string
 		displayName         string
+		year                int32
+		month               int32
+		day                 int32
 		findByIdentityIDErr error
 		updateErr           error
 	}{
-		{"success update user", true, "google-oauth2|000000000000000000000", "test user", nil, nil},
-		{"failure invalid identity id", false, "", "test user", nil, nil},
-		{"failure find by identity id error", false, "google-oauth2|000000000000000000000", "test user", errors.New("find by identity id error"), nil},
-		{"failure identity not found", false, "google-oauth2|000000000000000000000", "test user", identity.ErrIdentityNotFound, nil},
-		{"failure empty display name", false, "google-oauth2|000000000000000000000", "", nil, nil},
-		{"failure update error", false, "google-oauth2|000000000000000000000", "test user", nil, errors.New("update error")},
+		{"success update user", true, "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, nil},
+		{"failure invalid identity id", false, "", "test user", 2000, 1, 1, nil, nil},
+		{"failure find by identity id error", false, "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, errors.New("find by identity id error"), nil},
+		{"failure identity not found", false, "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, identity.ErrIdentityNotFound, nil},
+		{"failure empty display name", false, "google-oauth2|000000000000000000000", "", 2000, 1, 1, nil, nil},
+		{"failure invalid birth date", false, "google-oauth2|000000000000000000000", "test user", 2000, 2, 30, nil, nil},
+		{"failure update error", false, "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, errors.New("update error")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -116,14 +120,14 @@ func TestUpdateUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockUser := mocks.NewMockUser(ctrl)
-			mockUser.EXPECT().Update(gomock.Any()).AnyTimes()
+			mockUser.EXPECT().Update(gomock.Any(), gomock.Any()).AnyTimes()
 			mockUserRepository := mocks.NewMockUserRepository(ctrl)
 			mockUserRepository.EXPECT().FindByIdentityID(gomock.Any()).Return(mockUser, tt.findByIdentityIDErr).AnyTimes()
 			mockUserRepository.EXPECT().Update(gomock.Any()).Return(tt.updateErr).AnyTimes()
 
 			userUsecase := NewUserUsecase(mockUserRepository)
 
-			_, err := userUsecase.UpdateUser(tt.identityID, tt.displayName)
+			_, err := userUsecase.UpdateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}

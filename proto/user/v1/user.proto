@@ -44,9 +44,11 @@ message GetUserResponse {
 
 message UpdateUserRequest {
   string display_name = 1;
+  google.type.Date birth_date = 2;
 }
 
 message UpdateUserResponse {
   string user_id = 1;
   string display_name = 2;
+  google.type.Date birth_date = 3;
 }

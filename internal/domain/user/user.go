@@ -13,7 +13,7 @@ type User interface {
 	BirthDate() BirthDate
 	CreatedAt() time.Time
 	UpdatedAt() time.Time
-	Update(displayName DisplayName)
+	Update(displayName DisplayName, birthDate BirthDate)
 }
 
 type user struct {
@@ -49,8 +49,9 @@ func (u user) UpdatedAt() time.Time {
 	return u.updatedAt
 }
 
-func (u *user) Update(displayName DisplayName) {
+func (u *user) Update(displayName DisplayName, birthDate BirthDate) {
 	u.displayName = displayName
+	u.birthDate = birthDate
 	u.updatedAt = time.Now()
 }
 

@@ -113,15 +113,15 @@ func (mr *MockUserMockRecorder) Identities() *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockUser) Update(displayName user.DisplayName) {
+func (m *MockUser) Update(displayName user.DisplayName, birthDate user.BirthDate) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Update", displayName)
+	m.ctrl.Call(m, "Update", displayName, birthDate)
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserMockRecorder) Update(displayName any) *gomock.Call {
+func (mr *MockUserMockRecorder) Update(displayName, birthDate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUser)(nil).Update), displayName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUser)(nil).Update), displayName, birthDate)
 }
 
 // UpdatedAt mocks base method.
