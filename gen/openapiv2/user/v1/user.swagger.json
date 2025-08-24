@@ -188,6 +188,9 @@
       "properties": {
         "displayName": {
           "type": "string"
+        },
+        "birthDate": {
+          "$ref": "#/definitions/typeDate"
         }
       }
     },
@@ -199,6 +202,9 @@
         },
         "displayName": {
           "type": "string"
+        },
+        "birthDate": {
+          "$ref": "#/definitions/typeDate"
         }
       }
     }

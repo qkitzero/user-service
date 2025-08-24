@@ -77,7 +77,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 		return nil, err
 	}
 
-	user, err := h.userUsecase.UpdateUser(identityID, req.GetDisplayName())
+	user, err := h.userUsecase.UpdateUser(identityID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
 	if errors.Is(err, domainuser.ErrUserNotFound) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -88,5 +88,10 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 	return &userv1.UpdateUserResponse{
 		UserId:      user.ID().String(),
 		DisplayName: user.DisplayName().String(),
+		BirthDate: &date.Date{
+			Year:  int32(user.BirthDate().Year()),
+			Month: int32(user.BirthDate().Month()),
+			Day:   int32(user.BirthDate().Day()),
+		},
 	}, nil
 }
