@@ -21,7 +21,7 @@ func TestVerifyToken(t *testing.T) {
 		verifyTokenErr error
 	}{
 		{
-			name:           "success create user",
+			name:           "success verify token",
 			success:        true,
 			ctx:            metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", "Bearer "+accessToken)),
 			verifyTokenErr: nil,
