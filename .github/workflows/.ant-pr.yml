@@ -1,4 +1,0 @@
-limits:
-  files: 15
-  lines:
-    "internal/": 50
