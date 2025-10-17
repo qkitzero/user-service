@@ -1,7 +1,8 @@
 # User Service
 
-[![Go Test](https://github.com/qkitzero/user-service/actions/workflows/test.yml/badge.svg)](https://github.com/qkitzero/user-service/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/qkitzero/user-service/graph/badge.svg?token=ZON0LBP38L)](https://codecov.io/gh/qkitzero/user-service)
+[![release](https://img.shields.io/github/v/release/qkitzero/user-service?logo=github)](https://github.com/qkitzero/user-service/releases)
+[![test](https://github.com/qkitzero/user-service/actions/workflows/test.yml/badge.svg)](https://github.com/qkitzero/user-service/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/qkitzero/user-service/graph/badge.svg)](https://codecov.io/gh/qkitzero/user-service)
 [![Buf CI](https://github.com/qkitzero/user-service/actions/workflows/buf-ci.yaml/badge.svg)](https://github.com/qkitzero/user-service/actions/workflows/buf-ci.yaml)
 
 - Microservices Architecture
