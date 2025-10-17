@@ -9,9 +9,9 @@ import (
 )
 
 type UserUsecase interface {
-	CreateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error)
-	GetUser(identityIDStr string) (user.User, error)
-	UpdateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error)
+	CreateUser(identityID, displayName string, year, month, day int32) (user.User, error)
+	GetUser(identityID string) (user.User, error)
+	UpdateUser(identityID, displayName string, year, month, day int32) (user.User, error)
 }
 
 type userUsecase struct {
@@ -22,42 +22,42 @@ func NewUserUsecase(repo user.UserRepository) UserUsecase {
 	return &userUsecase{repo: repo}
 }
 
-func (s *userUsecase) CreateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error) {
-	identityID, err := identity.NewIdentityID(identityIDStr)
+func (s *userUsecase) CreateUser(identityID, displayName string, year, month, day int32) (user.User, error) {
+	newIdentityID, err := identity.NewIdentityID(identityID)
 	if err != nil {
 		return nil, err
 	}
 
-	identities := []identity.Identity{identity.NewIdentity(identityID)}
+	identities := []identity.Identity{identity.NewIdentity(newIdentityID)}
 
-	displayName, err := user.NewDisplayName(displayNameStr)
+	newDisplayName, err := user.NewDisplayName(displayName)
 	if err != nil {
 		return nil, err
 	}
 
-	birthDate, err := user.NewBirthDate(y, m, d)
+	newBirthDate, err := user.NewBirthDate(year, month, day)
 	if err != nil {
 		return nil, err
 	}
 
 	now := time.Now()
 
-	u := user.NewUser(user.NewUserID(), identities, displayName, birthDate, now, now)
+	newUser := user.NewUser(user.NewUserID(), identities, newDisplayName, newBirthDate, now, now)
 
-	if err := s.repo.Create(u); err != nil {
+	if err := s.repo.Create(newUser); err != nil {
 		return nil, err
 	}
 
-	return u, nil
+	return newUser, nil
 }
 
-func (s *userUsecase) GetUser(identityIDStr string) (user.User, error) {
-	id, err := identity.NewIdentityID(identityIDStr)
+func (s *userUsecase) GetUser(identityID string) (user.User, error) {
+	id, err := identity.NewIdentityID(identityID)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := s.repo.FindByIdentityID(id)
+	foundUser, err := s.repo.FindByIdentityID(id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -65,16 +65,16 @@ func (s *userUsecase) GetUser(identityIDStr string) (user.User, error) {
 		return nil, err
 	}
 
-	return u, nil
+	return foundUser, nil
 }
 
-func (s *userUsecase) UpdateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error) {
-	id, err := identity.NewIdentityID(identityIDStr)
+func (s *userUsecase) UpdateUser(identityID, displayName string, year, month, day int32) (user.User, error) {
+	id, err := identity.NewIdentityID(identityID)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := s.repo.FindByIdentityID(id)
+	foundUser, err := s.repo.FindByIdentityID(id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -82,21 +82,21 @@ func (s *userUsecase) UpdateUser(identityIDStr, displayNameStr string, y, m, d i
 		return nil, err
 	}
 
-	displayName, err := user.NewDisplayName(displayNameStr)
+	newDisplayName, err := user.NewDisplayName(displayName)
 	if err != nil {
 		return nil, err
 	}
 
-	birthDate, err := user.NewBirthDate(y, m, d)
+	newBirthDate, err := user.NewBirthDate(year, month, day)
 	if err != nil {
 		return nil, err
 	}
 
-	u.Update(displayName, birthDate)
+	foundUser.Update(newDisplayName, newBirthDate)
 
-	if err := s.repo.Update(u); err != nil {
+	if err := s.repo.Update(foundUser); err != nil {
 		return nil, err
 	}
 
-	return u, nil
+	return foundUser, nil
 }
