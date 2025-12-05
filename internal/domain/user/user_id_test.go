@@ -2,6 +2,8 @@ package user
 
 import (
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestNewUserID(t *testing.T) {
@@ -18,8 +20,8 @@ func TestNewUserID(t *testing.T) {
 			t.Parallel()
 
 			id := NewUserID()
-			if tt.success && id.String() == "" {
-				t.Errorf("expected valid user id string, but got empty string")
+			if tt.success && id.UUID == uuid.Nil {
+				t.Errorf("expected valid user id, but got a nil UUID")
 			}
 		})
 	}
