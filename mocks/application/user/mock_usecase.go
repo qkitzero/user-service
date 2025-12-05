@@ -41,46 +41,46 @@ func (m *MockUserUsecase) EXPECT() *MockUserUsecaseMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m_2 *MockUserUsecase) CreateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error) {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "CreateUser", identityIDStr, displayNameStr, y, m, d)
+func (m *MockUserUsecase) CreateUser(identityID, displayName string, year, month, day int32) (user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUser", identityID, displayName, year, month, day)
 	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUser indicates an expected call of CreateUser.
-func (mr *MockUserUsecaseMockRecorder) CreateUser(identityIDStr, displayNameStr, y, m, d any) *gomock.Call {
+func (mr *MockUserUsecaseMockRecorder) CreateUser(identityID, displayName, year, month, day any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserUsecase)(nil).CreateUser), identityIDStr, displayNameStr, y, m, d)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserUsecase)(nil).CreateUser), identityID, displayName, year, month, day)
 }
 
 // GetUser mocks base method.
-func (m *MockUserUsecase) GetUser(identityIDStr string) (user.User, error) {
+func (m *MockUserUsecase) GetUser(identityID string) (user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", identityIDStr)
+	ret := m.ctrl.Call(m, "GetUser", identityID)
 	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUser indicates an expected call of GetUser.
-func (mr *MockUserUsecaseMockRecorder) GetUser(identityIDStr any) *gomock.Call {
+func (mr *MockUserUsecaseMockRecorder) GetUser(identityID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockUserUsecase)(nil).GetUser), identityIDStr)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockUserUsecase)(nil).GetUser), identityID)
 }
 
 // UpdateUser mocks base method.
-func (m_2 *MockUserUsecase) UpdateUser(identityIDStr, displayNameStr string, y, m, d int32) (user.User, error) {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "UpdateUser", identityIDStr, displayNameStr, y, m, d)
+func (m *MockUserUsecase) UpdateUser(identityID, displayName string, year, month, day int32) (user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", identityID, displayName, year, month, day)
 	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockUserUsecaseMockRecorder) UpdateUser(identityIDStr, displayNameStr, y, m, d any) *gomock.Call {
+func (mr *MockUserUsecaseMockRecorder) UpdateUser(identityID, displayName, year, month, day any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserUsecase)(nil).UpdateUser), identityIDStr, displayNameStr, y, m, d)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserUsecase)(nil).UpdateUser), identityID, displayName, year, month, day)
 }
