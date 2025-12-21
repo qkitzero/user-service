@@ -17,6 +17,23 @@
 - Cloud Run
 
 ```mermaid
+classDiagram
+    direction LR
+
+    class User {
+        id
+        displayName
+        birthDate
+    }
+
+    class Identity {
+        id
+    }
+
+    User "1" -- "0..*" Identity : has
+```
+
+```mermaid
 flowchart TD
     subgraph gcp[GCP]
         secret_manager[Secret Manager]
