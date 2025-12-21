@@ -30,7 +30,9 @@ func (u user) ID() UserID {
 }
 
 func (u user) Identities() []identity.Identity {
-	return u.identities
+	identities := make([]identity.Identity, len(u.identities))
+	copy(identities, u.identities)
+	return identities
 }
 
 func (u user) DisplayName() DisplayName {
