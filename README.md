@@ -24,6 +24,8 @@ classDiagram
         id
         displayName
         birthDate
+        createdAt
+        updatedAt
     }
 
     class Identity {
