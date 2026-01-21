@@ -54,7 +54,7 @@ func main() {
 }
 
 func newDependencies(db *gorm.DB) (*grpcuser.UserHandler, *grpc.ClientConn) {
-	authTarget := util.GetEnv("AUTH_SERVICE_HOST", "") + ":" + util.GetEnv("AUTH_SERVICE_PORT", "")
+	authTarget := util.GetEnv("AUTH_SERVICE_HOST", "localhost") + ":" + util.GetEnv("AUTH_SERVICE_PORT", "50051")
 
 	var opts grpc.DialOption
 	switch util.GetEnv("ENV", "development") {
