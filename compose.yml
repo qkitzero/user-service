@@ -7,7 +7,8 @@ services:
     restart: always
     environment:
       - ENV=${ENV}
-      - PORT=${SERVER_CONTAINER_PORT}
+      - HTTP_PORT=${HTTP_CONTAINER_PORT}
+      - GRPC_PORT=${GRPC_CONTAINER_PORT}
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -20,13 +21,8 @@ services:
       user-db:
         condition: service_healthy
     ports:
-      - "${SERVER_HOST_PORT}:${SERVER_CONTAINER_PORT}"
-    healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=localhost:${SERVER_CONTAINER_PORT}"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
+      - "${HTTP_HOST_PORT}:${HTTP_CONTAINER_PORT}"
+      - "${GRPC_HOST_PORT}:${GRPC_CONTAINER_PORT}"
 
   user-db:
     image: postgres:17
@@ -46,20 +42,6 @@ services:
       start_period: 10s
     volumes:
       - user-db-data:/var/lib/postgresql/data
-
-  user-grpc-gateway:
-    build:
-      context: .
-      dockerfile: ./build/gateway/Dockerfile
-    container_name: user-grpc-gateway
-    restart: always
-    environment:
-      - ENV=${ENV}
-      - PORT=${GRPC_GATEWAY_CONTAINER_PORT}
-      - SERVER_HOST=${SERVER_HOST}
-      - SERVER_PORT=${SERVER_CONTAINER_PORT}
-    ports:
-      - "${GRPC_GATEWAY_HOST_PORT}:${GRPC_GATEWAY_CONTAINER_PORT}"
 
 volumes:
   user-db-data:

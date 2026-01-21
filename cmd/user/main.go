@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
+	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,6 +25,10 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	db, err := db.Init(
 		util.GetEnv("DB_HOST", ""),
 		util.GetEnv("DB_USER", ""),
@@ -30,11 +37,6 @@ func main() {
 		util.GetEnv("DB_PORT", ""),
 		util.GetEnv("DB_SSL_MODE", ""),
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	listener, err := net.Listen("tcp", ":"+util.GetEnv("PORT", ""))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,27 +57,49 @@ func main() {
 	}
 	defer conn.Close()
 
-	server := grpc.NewServer()
-
 	authServiceClient := authv1.NewAuthServiceClient(conn)
 	userRepository := infrauser.NewUserRepository(db)
 
 	authUsecase := apiauth.NewAuthUsecase(authServiceClient)
 	userUsecase := appuser.NewUserUsecase(userRepository)
 
-	healthServer := health.NewServer()
 	userHandler := grpcuser.NewUserHandler(authUsecase, userUsecase)
 
-	grpc_health_v1.RegisterHealthServer(server, healthServer)
-	userv1.RegisterUserServiceServer(server, userHandler)
-
+	healthServer := health.NewServer()
 	healthServer.SetServingStatus("user", grpc_health_v1.HealthCheckResponse_SERVING)
 
+	grpcServer := grpc.NewServer()
+	grpc_health_v1.RegisterHealthServer(grpcServer, healthServer)
+	userv1.RegisterUserServiceServer(grpcServer, userHandler)
+
 	if util.GetEnv("ENV", "development") == "development" {
-		reflection.Register(server)
+		reflection.Register(grpcServer)
 	}
 
-	if err = server.Serve(listener); err != nil {
+	grpcPort := util.GetEnv("GRPC_PORT", "50051")
+	grpcListener, err := net.Listen("tcp", ":"+grpcPort)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		log.Printf("starting grpc server on port %s", grpcPort)
+		if err := grpcServer.Serve(grpcListener); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	mux := runtime.NewServeMux(
+		runtime.WithHealthzEndpoint(grpc_health_v1.NewHealthClient(conn)),
+	)
+
+	if err := userv1.RegisterUserServiceHandlerServer(ctx, mux, userHandler); err != nil {
+		log.Fatal(err)
+	}
+
+	httpPort := util.GetEnv("HTTP_PORT", "8080")
+	log.Printf("starting http server on port %s", httpPort)
+	if err := http.ListenAndServe(":"+httpPort, mux); err != nil {
 		log.Fatal(err)
 	}
 }
