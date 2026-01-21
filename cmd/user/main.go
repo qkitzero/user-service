@@ -51,13 +51,13 @@ func main() {
 		opts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	conn, err := grpc.NewClient(authTarget, opts)
+	authConn, err := grpc.NewClient(authTarget, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer authConn.Close()
 
-	authServiceClient := authv1.NewAuthServiceClient(conn)
+	authServiceClient := authv1.NewAuthServiceClient(authConn)
 	userRepository := infrauser.NewUserRepository(db)
 
 	authUsecase := apiauth.NewAuthUsecase(authServiceClient)
@@ -89,8 +89,14 @@ func main() {
 		}
 	}()
 
+	userConn, err := grpc.NewClient("localhost:"+grpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer userConn.Close()
+
 	mux := runtime.NewServeMux(
-		runtime.WithHealthzEndpoint(grpc_health_v1.NewHealthClient(conn)),
+		runtime.WithHealthzEndpoint(grpc_health_v1.NewHealthClient(userConn)),
 	)
 
 	if err := userv1.RegisterUserServiceHandlerServer(ctx, mux, userHandler); err != nil {
