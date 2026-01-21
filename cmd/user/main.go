@@ -99,7 +99,8 @@ func main() {
 		runtime.WithHealthzEndpoint(grpc_health_v1.NewHealthClient(userConn)),
 	)
 
-	if err := userv1.RegisterUserServiceHandlerServer(ctx, mux, userHandler); err != nil {
+	grpcEndpoint := "localhost:" + grpcPort
+	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}); err != nil {
 		log.Fatal(err)
 	}
 
