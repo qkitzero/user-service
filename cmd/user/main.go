@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"gorm.io/gorm"
 
 	authv1 "github.com/qkitzero/auth-service/gen/go/auth/v1"
 	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
@@ -25,22 +26,34 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	db, err := db.Init(
-		util.GetEnv("DB_HOST", ""),
-		util.GetEnv("DB_USER", ""),
-		util.GetEnv("DB_PASSWORD", ""),
-		util.GetEnv("DB_NAME", ""),
-		util.GetEnv("DB_PORT", ""),
-		util.GetEnv("DB_SSL_MODE", ""),
+		util.GetEnv("DB_HOST", "localhost"),
+		util.GetEnv("DB_USER", "user"),
+		util.GetEnv("DB_PASSWORD", "password"),
+		util.GetEnv("DB_NAME", "user_db"),
+		util.GetEnv("DB_PORT", "5432"),
+		util.GetEnv("DB_SSL_MODE", "disable"),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	userHandler, authConn := newDependencies(db)
+	defer authConn.Close()
+
+	grpcPort := util.GetEnv("GRPC_PORT", "50051")
+	grpcServer := newGRPCServer(userHandler)
+
+	go startGRPCServer(grpcServer, grpcPort)
+
+	httpPort := util.GetEnv("HTTP_PORT", "8080")
+	startHTTPServer(ctx, grpcPort, httpPort)
+}
+
+func newDependencies(db *gorm.DB) (*grpcuser.UserHandler, *grpc.ClientConn) {
 	authTarget := util.GetEnv("AUTH_SERVICE_HOST", "") + ":" + util.GetEnv("AUTH_SERVICE_PORT", "")
 
 	var opts grpc.DialOption
@@ -55,7 +68,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer authConn.Close()
 
 	authServiceClient := authv1.NewAuthServiceClient(authConn)
 	userRepository := infrauser.NewUserRepository(db)
@@ -65,31 +77,40 @@ func main() {
 
 	userHandler := grpcuser.NewUserHandler(authUsecase, userUsecase)
 
+	return userHandler, authConn
+}
+
+func newGRPCServer(userHandler *grpcuser.UserHandler) *grpc.Server {
 	healthServer := health.NewServer()
 	healthServer.SetServingStatus("user", grpc_health_v1.HealthCheckResponse_SERVING)
 
-	grpcServer := grpc.NewServer()
-	grpc_health_v1.RegisterHealthServer(grpcServer, healthServer)
-	userv1.RegisterUserServiceServer(grpcServer, userHandler)
+	server := grpc.NewServer()
+	grpc_health_v1.RegisterHealthServer(server, healthServer)
+	userv1.RegisterUserServiceServer(server, userHandler)
 
 	if util.GetEnv("ENV", "development") == "development" {
-		reflection.Register(grpcServer)
+		reflection.Register(server)
 	}
+	return server
+}
 
-	grpcPort := util.GetEnv("GRPC_PORT", "50051")
-	grpcListener, err := net.Listen("tcp", ":"+grpcPort)
+func startGRPCServer(server *grpc.Server, port string) {
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	go func() {
-		log.Printf("starting grpc server on port %s", grpcPort)
-		if err := grpcServer.Serve(grpcListener); err != nil {
-			log.Fatal(err)
-		}
-	}()
+	log.Printf("starting gRPC server on port %s", port)
 
-	userConn, err := grpc.NewClient("localhost:"+grpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err := server.Serve(listener); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func startHTTPServer(ctx context.Context, grpcPort, httpPort string) {
+	grpcEndpoint := "localhost:" + grpcPort
+
+	userConn, err := grpc.NewClient(grpcEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,13 +120,13 @@ func main() {
 		runtime.WithHealthzEndpoint(grpc_health_v1.NewHealthClient(userConn)),
 	)
 
-	grpcEndpoint := "localhost:" + grpcPort
-	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}); err != nil {
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts); err != nil {
 		log.Fatal(err)
 	}
 
-	httpPort := util.GetEnv("HTTP_PORT", "8080")
 	log.Printf("starting http server on port %s", httpPort)
+
 	if err := http.ListenAndServe(":"+httpPort, mux); err != nil {
 		log.Fatal(err)
 	}
