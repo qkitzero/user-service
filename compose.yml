@@ -7,8 +7,8 @@ services:
     restart: always
     environment:
       - ENV=${ENV}
-      - HTTP_PORT=${HTTP_CONTAINER_PORT}
       - GRPC_PORT=${GRPC_CONTAINER_PORT}
+      - HTTP_PORT=${HTTP_CONTAINER_PORT}
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -21,8 +21,8 @@ services:
       user-db:
         condition: service_healthy
     ports:
-      - "${HTTP_HOST_PORT}:${HTTP_CONTAINER_PORT}"
       - "${GRPC_HOST_PORT}:${GRPC_CONTAINER_PORT}"
+      - "${HTTP_HOST_PORT}:${HTTP_CONTAINER_PORT}"
 
   user-db:
     image: postgres:17
