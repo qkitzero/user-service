@@ -85,12 +85,14 @@ func newGRPCServer(userHandler *grpcuser.UserHandler) *grpc.Server {
 	healthServer.SetServingStatus("user", grpc_health_v1.HealthCheckResponse_SERVING)
 
 	server := grpc.NewServer()
+
 	grpc_health_v1.RegisterHealthServer(server, healthServer)
 	userv1.RegisterUserServiceServer(server, userHandler)
 
 	if util.GetEnv("ENV", "development") == "development" {
 		reflection.Register(server)
 	}
+
 	return server
 }
 
