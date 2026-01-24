@@ -32,7 +32,7 @@ classDiagram
         id
     }
 
-    User "1" -- "0..*" Identity : has
+    User "1" -- "0..*" Identity
 ```
 
 ```mermaid
