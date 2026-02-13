@@ -41,15 +41,15 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
+			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
+			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
 			mockUserUsecase.EXPECT().CreateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
 			mockUserID := user.NewUserID()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
+			userHandler := NewUserHandler(mockAuthService, mockUserUsecase)
 
 			req := &userv1.CreateUserRequest{
 				DisplayName: tt.displayName,
@@ -94,19 +94,19 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
+			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID := user.NewUserID()
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
+			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
 			mockUserUsecase.EXPECT().GetUser(tt.identityID).Return(mockUser, tt.getUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
+			userHandler := NewUserHandler(mockAuthService, mockUserUsecase)
 
 			req := &userv1.GetUserRequest{}
 
@@ -148,19 +148,19 @@ func TestUpdateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthUsecase := mocksappauth.NewMockAuthUsecase(ctrl)
+			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID, _ := user.NewUserIDFromString("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockAuthUsecase.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
+			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
 			mockUserUsecase.EXPECT().UpdateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.updateUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthUsecase, mockUserUsecase)
+			userHandler := NewUserHandler(mockAuthService, mockUserUsecase)
 
 			req := &userv1.UpdateUserRequest{
 				DisplayName: tt.displayName,

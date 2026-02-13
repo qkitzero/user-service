@@ -60,11 +60,11 @@ func main() {
 	authServiceClient := authv1.NewAuthServiceClient(conn)
 	userRepository := infrauser.NewUserRepository(db)
 
-	authUsecase := apiauth.NewAuthUsecase(authServiceClient)
+	authService := apiauth.NewAuthService(authServiceClient)
 	userUsecase := appuser.NewUserUsecase(userRepository)
 
 	healthServer := health.NewServer()
-	userHandler := grpcuser.NewUserHandler(authUsecase, userUsecase)
+	userHandler := grpcuser.NewUserHandler(authService, userUsecase)
 
 	grpc_health_v1.RegisterHealthServer(server, healthServer)
 	userv1.RegisterUserServiceServer(server, userHandler)

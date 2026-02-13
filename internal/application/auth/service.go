@@ -2,6 +2,6 @@ package auth
 
 import "context"
 
-type AuthUsecase interface {
+type AuthService interface {
 	VerifyToken(ctx context.Context) (string, error)
 }

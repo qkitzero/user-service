@@ -53,9 +53,9 @@ func TestVerifyToken(t *testing.T) {
 			}
 			mockClient.EXPECT().VerifyToken(gomock.Any(), gomock.Any()).Return(mockVerifyTokenResponse, tt.verifyTokenErr).AnyTimes()
 
-			authUsecase := NewAuthUsecase(mockClient)
+			authService := NewAuthService(mockClient)
 
-			_, err := authUsecase.VerifyToken(tt.ctx)
+			_, err := authService.VerifyToken(tt.ctx)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}
