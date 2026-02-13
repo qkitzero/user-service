@@ -16,22 +16,22 @@ import (
 
 type UserHandler struct {
 	userv1.UnimplementedUserServiceServer
-	authUsecase appauth.AuthUsecase
+	authService appauth.AuthService
 	userUsecase appuser.UserUsecase
 }
 
 func NewUserHandler(
-	authUsecase appauth.AuthUsecase,
+	authService appauth.AuthService,
 	userUsecase appuser.UserUsecase,
 ) *UserHandler {
 	return &UserHandler{
-		authUsecase: authUsecase,
+		authService: authService,
 		userUsecase: userUsecase,
 	}
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
-	identityID, err := h.authUsecase.VerifyToken(ctx)
+	identityID, err := h.authService.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
-	identityID, err := h.authUsecase.VerifyToken(ctx)
+	identityID, err := h.authService.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UpdateUserResponse, error) {
-	identityID, err := h.authUsecase.VerifyToken(ctx)
+	identityID, err := h.authService.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}

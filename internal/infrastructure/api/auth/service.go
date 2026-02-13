@@ -9,15 +9,15 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type authUsecase struct {
+type authService struct {
 	client authv1.AuthServiceClient
 }
 
-func NewAuthUsecase(client authv1.AuthServiceClient) auth.AuthUsecase {
-	return &authUsecase{client: client}
+func NewAuthService(client authv1.AuthServiceClient) auth.AuthService {
+	return &authService{client: client}
 }
 
-func (s *authUsecase) VerifyToken(ctx context.Context) (string, error) {
+func (s *authService) VerifyToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return "", errors.New("metadata is missing")
