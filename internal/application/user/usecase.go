@@ -1,28 +1,36 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"time"
 
+	"github.com/qkitzero/user-service/internal/application/auth"
 	"github.com/qkitzero/user-service/internal/domain/identity"
 	"github.com/qkitzero/user-service/internal/domain/user"
 )
 
 type UserUsecase interface {
-	CreateUser(identityID, displayName string, year, month, day int32) (user.User, error)
-	GetUser(identityID string) (user.User, error)
-	UpdateUser(identityID, displayName string, year, month, day int32) (user.User, error)
+	CreateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error)
+	GetUser(ctx context.Context) (user.User, error)
+	UpdateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error)
 }
 
 type userUsecase struct {
-	repo user.UserRepository
+	authService auth.AuthService
+	userRepo    user.UserRepository
 }
 
-func NewUserUsecase(repo user.UserRepository) UserUsecase {
-	return &userUsecase{repo: repo}
+func NewUserUsecase(authService auth.AuthService, userRepo user.UserRepository) UserUsecase {
+	return &userUsecase{authService: authService, userRepo: userRepo}
 }
 
-func (s *userUsecase) CreateUser(identityID, displayName string, year, month, day int32) (user.User, error) {
+func (s *userUsecase) CreateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error) {
+	identityID, err := s.authService.VerifyToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	newIdentityID, err := identity.NewIdentityID(identityID)
 	if err != nil {
 		return nil, err
@@ -44,20 +52,25 @@ func (s *userUsecase) CreateUser(identityID, displayName string, year, month, da
 
 	newUser := user.NewUser(user.NewUserID(), identities, newDisplayName, newBirthDate, now, now)
 
-	if err := s.repo.Create(newUser); err != nil {
+	if err := s.userRepo.Create(newUser); err != nil {
 		return nil, err
 	}
 
 	return newUser, nil
 }
 
-func (s *userUsecase) GetUser(identityID string) (user.User, error) {
+func (s *userUsecase) GetUser(ctx context.Context) (user.User, error) {
+	identityID, err := s.authService.VerifyToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := identity.NewIdentityID(identityID)
 	if err != nil {
 		return nil, err
 	}
 
-	foundUser, err := s.repo.FindByIdentityID(id)
+	foundUser, err := s.userRepo.FindByIdentityID(id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -68,13 +81,18 @@ func (s *userUsecase) GetUser(identityID string) (user.User, error) {
 	return foundUser, nil
 }
 
-func (s *userUsecase) UpdateUser(identityID, displayName string, year, month, day int32) (user.User, error) {
+func (s *userUsecase) UpdateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error) {
+	identityID, err := s.authService.VerifyToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := identity.NewIdentityID(identityID)
 	if err != nil {
 		return nil, err
 	}
 
-	foundUser, err := s.repo.FindByIdentityID(id)
+	foundUser, err := s.userRepo.FindByIdentityID(id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -94,7 +112,7 @@ func (s *userUsecase) UpdateUser(identityID, displayName string, year, month, da
 
 	foundUser.Update(newDisplayName, newBirthDate)
 
-	if err := s.repo.Update(foundUser); err != nil {
+	if err := s.userRepo.Update(foundUser); err != nil {
 		return nil, err
 	}
 
