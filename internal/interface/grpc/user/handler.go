@@ -9,34 +9,25 @@ import (
 	"google.golang.org/grpc/status"
 
 	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
-	appauth "github.com/qkitzero/user-service/internal/application/auth"
 	appuser "github.com/qkitzero/user-service/internal/application/user"
 	domainuser "github.com/qkitzero/user-service/internal/domain/user"
 )
 
 type UserHandler struct {
 	userv1.UnimplementedUserServiceServer
-	authService appauth.AuthService
 	userUsecase appuser.UserUsecase
 }
 
 func NewUserHandler(
-	authService appauth.AuthService,
 	userUsecase appuser.UserUsecase,
 ) *UserHandler {
 	return &UserHandler{
-		authService: authService,
 		userUsecase: userUsecase,
 	}
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
-	identityID, err := h.authService.VerifyToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := h.userUsecase.CreateUser(identityID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	user, err := h.userUsecase.CreateUser(ctx, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +38,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
-	identityID, err := h.authService.VerifyToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := h.userUsecase.GetUser(identityID)
+	user, err := h.userUsecase.GetUser(ctx)
 	if errors.Is(err, domainuser.ErrUserNotFound) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -72,12 +58,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UpdateUserResponse, error) {
-	identityID, err := h.authService.VerifyToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := h.userUsecase.UpdateUser(identityID, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	user, err := h.userUsecase.UpdateUser(ctx, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
 	if errors.Is(err, domainuser.ErrUserNotFound) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
