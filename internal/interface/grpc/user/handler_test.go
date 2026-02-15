@@ -10,7 +10,6 @@ import (
 
 	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
 	"github.com/qkitzero/user-service/internal/domain/user"
-	mocksappauth "github.com/qkitzero/user-service/mocks/application/auth"
 	mocksappuser "github.com/qkitzero/user-service/mocks/application/user"
 	mocksuser "github.com/qkitzero/user-service/mocks/domain/user"
 )
@@ -18,20 +17,17 @@ import (
 func TestCreateUser(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name           string
-		success        bool
-		ctx            context.Context
-		identityID     string
-		displayName    string
-		year           int32
-		month          int32
-		day            int32
-		verifyTokenErr error
-		createUserErr  error
+		name          string
+		success       bool
+		ctx           context.Context
+		displayName   string
+		year          int32
+		month         int32
+		day           int32
+		createUserErr error
 	}{
-		{"success create user", true, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, nil},
-		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, fmt.Errorf("verify token error"), nil},
-		{"failure create user error", false, context.Background(), "google-oauth2|000000000000000000000", "test user", 2000, 1, 1, nil, fmt.Errorf("create user error")},
+		{"success create user", true, context.Background(), "test user", 2000, 1, 1, nil},
+		{"failure create user error", false, context.Background(), "test user", 2000, 1, 1, fmt.Errorf("create user error")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -41,15 +37,13 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
-			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().CreateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
+			mockUserUsecase.EXPECT().CreateUser(tt.ctx, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
 			mockUserID := user.NewUserID()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthService, mockUserUsecase)
+			userHandler := NewUserHandler(mockUserUsecase)
 
 			req := &userv1.CreateUserRequest{
 				DisplayName: tt.displayName,
@@ -74,17 +68,14 @@ func TestCreateUser(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name           string
-		success        bool
-		ctx            context.Context
-		identityID     string
-		verifyTokenErr error
-		getUserErr     error
+		name       string
+		success    bool
+		ctx        context.Context
+		getUserErr error
 	}{
-		{"success get user", true, context.Background(), "google-oauth2|000000000000000000000", nil, nil},
-		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", fmt.Errorf("verify token error"), nil},
-		{"failure get user error", false, context.Background(), "google-oauth2|000000000000000000000", nil, fmt.Errorf("get user error")},
-		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", nil, user.ErrUserNotFound},
+		{"success get user", true, context.Background(), nil},
+		{"failure get user error", false, context.Background(), fmt.Errorf("get user error")},
+		{"failure user not found error", false, context.Background(), user.ErrUserNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -94,19 +85,17 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID := user.NewUserID()
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().GetUser(tt.identityID).Return(mockUser, tt.getUserErr).AnyTimes()
+			mockUserUsecase.EXPECT().GetUser(tt.ctx).Return(mockUser, tt.getUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthService, mockUserUsecase)
+			userHandler := NewUserHandler(mockUserUsecase)
 
 			req := &userv1.GetUserRequest{}
 
@@ -124,21 +113,18 @@ func TestGetUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name           string
-		success        bool
-		ctx            context.Context
-		identityID     string
-		displayName    string
-		year           int32
-		month          int32
-		day            int32
-		verifyTokenErr error
-		updateUserErr  error
+		name          string
+		success       bool
+		ctx           context.Context
+		displayName   string
+		year          int32
+		month         int32
+		day           int32
+		updateUserErr error
 	}{
-		{"success update user", true, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, nil, nil},
-		{"failure verify token error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, fmt.Errorf("verify token error"), nil},
-		{"failure update user error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, nil, fmt.Errorf("update user error")},
-		{"failure user not found error", false, context.Background(), "google-oauth2|000000000000000000000", "updated test user", 2000, 1, 1, nil, user.ErrUserNotFound},
+		{"success update user", true, context.Background(), "updated test user", 2000, 1, 1, nil},
+		{"failure update user error", false, context.Background(), "updated test user", 2000, 1, 1, fmt.Errorf("update user error")},
+		{"failure user not found error", false, context.Background(), "updated test user", 2000, 1, 1, user.ErrUserNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -148,19 +134,17 @@ func TestUpdateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserID, _ := user.NewUserIDFromString("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
 			mockDisplayName, _ := user.NewDisplayName("test user")
 			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserUsecase.EXPECT().UpdateUser(tt.identityID, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.updateUserErr).AnyTimes()
+			mockUserUsecase.EXPECT().UpdateUser(tt.ctx, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.updateUserErr).AnyTimes()
 			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
 			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
 			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
 
-			userHandler := NewUserHandler(mockAuthService, mockUserUsecase)
+			userHandler := NewUserHandler(mockUserUsecase)
 
 			req := &userv1.UpdateUserRequest{
 				DisplayName: tt.displayName,
