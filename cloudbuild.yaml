@@ -21,7 +21,7 @@ steps:
         gcloud artifacts repositories set-cleanup-policies user-service \
           --project=$PROJECT_ID \
           --location=us-central1 \
-          --policy=artifact-registry-cleanup-policy.json \
+          --policy=cleanup-policy.json \
           --no-dry-run
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -66,7 +66,7 @@ steps:
         gcloud artifacts repositories set-cleanup-policies user-service-gateway \
           --project=$PROJECT_ID \
           --location=us-central1 \
-          --policy=artifact-registry-cleanup-policy.json \
+          --policy=cleanup-policy.json \
           --no-dry-run
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
