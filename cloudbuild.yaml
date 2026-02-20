@@ -3,7 +3,7 @@ steps:
     args:
       - build
       - -t
-      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA
+      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service/user-service:$COMMIT_SHA
       - -f
       - ./build/user/Dockerfile
       - .
@@ -11,7 +11,18 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA
+      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service/user-service:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud artifacts repositories set-cleanup-policies user-service \
+          --project=$PROJECT_ID \
+          --location=us-central1 \
+          --policy=cleanup-policy.json \
+          --no-dry-run
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: bash
@@ -20,7 +31,7 @@ steps:
       - |
         gcloud secrets versions access latest --secret=user-service-env-file > .env
         gcloud run deploy user-service \
-          --image=us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA \
+          --image=us-central1-docker.pkg.dev/$PROJECT_ID/user-service/user-service:$COMMIT_SHA \
           --region=us-central1 \
           --platform=managed \
           --min-instances=0 \
@@ -37,7 +48,7 @@ steps:
     args:
       - build
       - -t
-      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA
+      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/user-service-gateway:$COMMIT_SHA
       - -f
       - ./build/gateway/Dockerfile
       - .
@@ -45,7 +56,18 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA
+      - us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/user-service-gateway:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud artifacts repositories set-cleanup-policies user-service-gateway \
+          --project=$PROJECT_ID \
+          --location=us-central1 \
+          --policy=cleanup-policy.json \
+          --no-dry-run
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: bash
@@ -54,7 +76,7 @@ steps:
       - |
         gcloud secrets versions access latest --secret=user-service-env-file > .env
         gcloud run deploy user-service-gateway \
-          --image=us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA \
+          --image=us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/user-service-gateway:$COMMIT_SHA \
           --region=us-central1 \
           --platform=managed \
           --min-instances=0 \
@@ -68,8 +90,8 @@ steps:
           --set-env-vars=$$(cat .env | xargs | sed 's/ /,/g')
 
 images:
-  - us-central1-docker.pkg.dev/$PROJECT_ID/user-service/$COMMIT_SHA
-  - us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/$COMMIT_SHA
+  - us-central1-docker.pkg.dev/$PROJECT_ID/user-service/user-service:$COMMIT_SHA
+  - us-central1-docker.pkg.dev/$PROJECT_ID/user-service-gateway/user-service-gateway:$COMMIT_SHA
 
 options:
   logging: CLOUD_LOGGING_ONLY
