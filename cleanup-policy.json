@@ -1,6 +1,6 @@
 [
   {
-    "name": "delete",
+    "name": "delete-old-images",
     "action": { "type": "Delete" },
     "condition": {
       "olderThan": "86400s",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "name": "keep",
+    "name": "keep-minimum-versions",
     "action": { "type": "Keep" },
     "mostRecentVersions": {
       "keepCount": 1
