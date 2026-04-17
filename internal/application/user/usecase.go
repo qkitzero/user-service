@@ -25,8 +25,8 @@ func NewUserUsecase(authService auth.AuthService, userRepo user.UserRepository) 
 	return &userUsecase{authService: authService, userRepo: userRepo}
 }
 
-func (s *userUsecase) CreateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error) {
-	identityID, err := s.authService.VerifyToken(ctx)
+func (u *userUsecase) CreateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error) {
+	identityID, err := u.authService.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -52,15 +52,15 @@ func (s *userUsecase) CreateUser(ctx context.Context, displayName string, year, 
 
 	newUser := user.NewUser(user.NewUserID(), identities, newDisplayName, newBirthDate, now, now)
 
-	if err := s.userRepo.Create(newUser); err != nil {
+	if err := u.userRepo.Create(newUser); err != nil {
 		return nil, err
 	}
 
 	return newUser, nil
 }
 
-func (s *userUsecase) GetUser(ctx context.Context) (user.User, error) {
-	identityID, err := s.authService.VerifyToken(ctx)
+func (u *userUsecase) GetUser(ctx context.Context) (user.User, error) {
+	identityID, err := u.authService.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (s *userUsecase) GetUser(ctx context.Context) (user.User, error) {
 		return nil, err
 	}
 
-	foundUser, err := s.userRepo.FindByIdentityID(id)
+	foundUser, err := u.userRepo.FindByIdentityID(id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -81,8 +81,8 @@ func (s *userUsecase) GetUser(ctx context.Context) (user.User, error) {
 	return foundUser, nil
 }
 
-func (s *userUsecase) UpdateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error) {
-	identityID, err := s.authService.VerifyToken(ctx)
+func (u *userUsecase) UpdateUser(ctx context.Context, displayName string, year, month, day int32) (user.User, error) {
+	identityID, err := u.authService.VerifyToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (s *userUsecase) UpdateUser(ctx context.Context, displayName string, year, 
 		return nil, err
 	}
 
-	foundUser, err := s.userRepo.FindByIdentityID(id)
+	foundUser, err := u.userRepo.FindByIdentityID(id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -112,7 +112,7 @@ func (s *userUsecase) UpdateUser(ctx context.Context, displayName string, year, 
 
 	foundUser.Update(newDisplayName, newBirthDate)
 
-	if err := s.userRepo.Update(foundUser); err != nil {
+	if err := u.userRepo.Update(foundUser); err != nil {
 		return nil, err
 	}
 
