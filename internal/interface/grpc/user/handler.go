@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"log"
 
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
@@ -41,7 +42,8 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 		if _, ok := status.FromError(err); ok {
 			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		log.Printf("CreateUser: internal error: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &userv1.CreateUserResponse{
@@ -58,7 +60,8 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 		if errors.Is(err, domainuser.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		log.Printf("GetUser: internal error: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &userv1.GetUserResponse{
@@ -90,7 +93,8 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 		if errors.Is(err, domainuser.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		log.Printf("UpdateUser: internal error: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &userv1.UpdateUserResponse{
