@@ -27,9 +27,21 @@ func NewUserHandler(
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
-	user, err := h.userUsecase.CreateUser(ctx, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	displayName, err := domainuser.NewDisplayName(req.GetDisplayName())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	birthDate, err := domainuser.NewBirthDate(req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	user, err := h.userUsecase.CreateUser(ctx, displayName, birthDate)
+	if err != nil {
+		if _, ok := status.FromError(err); ok {
+			return nil, err
+		}
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &userv1.CreateUserResponse{
@@ -39,11 +51,14 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 
 func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
 	user, err := h.userUsecase.GetUser(ctx)
-	if errors.Is(err, domainuser.ErrUserNotFound) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
 	if err != nil {
-		return nil, err
+		if _, ok := status.FromError(err); ok {
+			return nil, err
+		}
+		if errors.Is(err, domainuser.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &userv1.GetUserResponse{
@@ -58,12 +73,24 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UpdateUserResponse, error) {
-	user, err := h.userUsecase.UpdateUser(ctx, req.GetDisplayName(), req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
-	if errors.Is(err, domainuser.ErrUserNotFound) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
+	displayName, err := domainuser.NewDisplayName(req.GetDisplayName())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	birthDate, err := domainuser.NewBirthDate(req.GetBirthDate().GetYear(), req.GetBirthDate().GetMonth(), req.GetBirthDate().GetDay())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	user, err := h.userUsecase.UpdateUser(ctx, displayName, birthDate)
+	if err != nil {
+		if _, ok := status.FromError(err); ok {
+			return nil, err
+		}
+		if errors.Is(err, domainuser.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &userv1.UpdateUserResponse{
