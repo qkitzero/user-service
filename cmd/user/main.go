@@ -97,7 +97,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("db handle: %w", err)
 	}
-	defer sqlDB.Close()
+	defer func() { _ = sqlDB.Close() }()
 
 	listener, err := net.Listen("tcp", ":"+cfg.Port)
 	if err != nil {
@@ -116,7 +116,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("auth client: %w", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	server := grpc.NewServer()
 
