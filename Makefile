@@ -15,7 +15,7 @@ lint:
 lint-fix:
 	go tool golangci-lint run --fix ./...
 
-MOCK_GEN=go run go.uber.org/mock/mockgen@v0.6.0
+MOCK_GEN=go tool mockgen
 
 mock-gen:
 	$(MOCK_GEN) -source=internal/domain/user/user.go -destination=mocks/domain/user/mock_user.go -package=mocks
