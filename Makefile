@@ -9,6 +9,12 @@ proto-lint:
 proto-gen:
 	buf generate
 
+lint:
+	go tool golangci-lint run ./...
+
+lint-fix:
+	go tool golangci-lint run --fix ./...
+
 MOCK_GEN=go run go.uber.org/mock/mockgen@v0.6.0
 
 mock-gen:
