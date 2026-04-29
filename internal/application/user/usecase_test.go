@@ -43,7 +43,7 @@ func TestCreateUser(t *testing.T) {
 			mockAuthService := mocksappauth.NewMockAuthService(ctrl)
 			mockUserRepository := mocksuser.NewMockUserRepository(ctrl)
 			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserRepository.EXPECT().Create(gomock.Any()).Return(tt.createErr).AnyTimes()
+			mockUserRepository.EXPECT().Create(tt.ctx, gomock.Any()).Return(tt.createErr).AnyTimes()
 
 			u := NewUserUsecase(mockAuthService, mockUserRepository)
 
@@ -86,7 +86,7 @@ func TestGetUser(t *testing.T) {
 			mockUser := mocksuser.NewMockUser(ctrl)
 			mockUserRepository := mocksuser.NewMockUserRepository(ctrl)
 			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserRepository.EXPECT().FindByIdentityID(gomock.Any()).Return(mockUser, tt.findByIdentityIDErr).AnyTimes()
+			mockUserRepository.EXPECT().FindByIdentityID(tt.ctx, gomock.Any()).Return(mockUser, tt.findByIdentityIDErr).AnyTimes()
 
 			u := NewUserUsecase(mockAuthService, mockUserRepository)
 
@@ -135,8 +135,8 @@ func TestUpdateUser(t *testing.T) {
 			mockUser.EXPECT().Update(gomock.Any(), gomock.Any()).AnyTimes()
 			mockUserRepository := mocksuser.NewMockUserRepository(ctrl)
 			mockAuthService.EXPECT().VerifyToken(tt.ctx).Return(tt.identityID, tt.verifyTokenErr).AnyTimes()
-			mockUserRepository.EXPECT().FindByIdentityID(gomock.Any()).Return(mockUser, tt.findByIdentityIDErr).AnyTimes()
-			mockUserRepository.EXPECT().Update(gomock.Any()).Return(tt.updateErr).AnyTimes()
+			mockUserRepository.EXPECT().FindByIdentityID(tt.ctx, gomock.Any()).Return(mockUser, tt.findByIdentityIDErr).AnyTimes()
+			mockUserRepository.EXPECT().Update(tt.ctx, gomock.Any()).Return(tt.updateErr).AnyTimes()
 
 			u := NewUserUsecase(mockAuthService, mockUserRepository)
 

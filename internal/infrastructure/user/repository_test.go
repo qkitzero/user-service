@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"regexp"
 	"testing"
@@ -107,7 +108,7 @@ func TestCreate(t *testing.T) {
 
 			repo := NewUserRepository(gormDB)
 
-			err = repo.Create(mockUser)
+			err = repo.Create(context.Background(), mockUser)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}
@@ -244,7 +245,7 @@ func TestFindByIdentityID(t *testing.T) {
 
 			repo := NewUserRepository(gormDB)
 
-			_, err = repo.FindByIdentityID(tt.identityID)
+			_, err = repo.FindByIdentityID(context.Background(), tt.identityID)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}
@@ -340,7 +341,7 @@ func TestFindByID(t *testing.T) {
 
 			repo := NewUserRepository(gormDB)
 
-			_, err = repo.FindByID(tt.userID)
+			_, err = repo.FindByID(context.Background(), tt.userID)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}
@@ -421,7 +422,7 @@ func TestUpdate(t *testing.T) {
 
 			repo := NewUserRepository(gormDB)
 
-			err = repo.Update(mockUser)
+			err = repo.Update(context.Background(), mockUser)
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}

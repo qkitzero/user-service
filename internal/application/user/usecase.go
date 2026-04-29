@@ -42,7 +42,7 @@ func (u *userUsecase) CreateUser(ctx context.Context, displayName user.DisplayNa
 
 	newUser := user.NewUser(user.NewUserID(), identities, displayName, birthDate, now, now)
 
-	if err := u.userRepo.Create(newUser); err != nil {
+	if err := u.userRepo.Create(ctx, newUser); err != nil {
 		return nil, err
 	}
 
@@ -60,7 +60,7 @@ func (u *userUsecase) GetUser(ctx context.Context) (user.User, error) {
 		return nil, err
 	}
 
-	foundUser, err := u.userRepo.FindByIdentityID(id)
+	foundUser, err := u.userRepo.FindByIdentityID(ctx, id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -82,7 +82,7 @@ func (u *userUsecase) UpdateUser(ctx context.Context, displayName user.DisplayNa
 		return nil, err
 	}
 
-	foundUser, err := u.userRepo.FindByIdentityID(id)
+	foundUser, err := u.userRepo.FindByIdentityID(ctx, id)
 	if errors.Is(err, identity.ErrIdentityNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -92,7 +92,7 @@ func (u *userUsecase) UpdateUser(ctx context.Context, displayName user.DisplayNa
 
 	foundUser.Update(displayName, birthDate)
 
-	if err := u.userRepo.Update(foundUser); err != nil {
+	if err := u.userRepo.Update(ctx, foundUser); err != nil {
 		return nil, err
 	}
 

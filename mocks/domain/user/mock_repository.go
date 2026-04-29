@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	identity "github.com/qkitzero/user-service/internal/domain/identity"
@@ -42,59 +43,59 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUserRepository) Create(arg0 user.User) error {
+func (m *MockUserRepository) Create(ctx context.Context, arg1 user.User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0)
+	ret := m.ctrl.Call(m, "Create", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockUserRepositoryMockRecorder) Create(arg0 any) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Create(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepository)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepository)(nil).Create), ctx, arg1)
 }
 
 // FindByID mocks base method.
-func (m *MockUserRepository) FindByID(userID user.UserID) (user.User, error) {
+func (m *MockUserRepository) FindByID(ctx context.Context, userID user.UserID) (user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByID", userID)
+	ret := m.ctrl.Call(m, "FindByID", ctx, userID)
 	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByID indicates an expected call of FindByID.
-func (mr *MockUserRepositoryMockRecorder) FindByID(userID any) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) FindByID(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockUserRepository)(nil).FindByID), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockUserRepository)(nil).FindByID), ctx, userID)
 }
 
 // FindByIdentityID mocks base method.
-func (m *MockUserRepository) FindByIdentityID(identityID identity.IdentityID) (user.User, error) {
+func (m *MockUserRepository) FindByIdentityID(ctx context.Context, identityID identity.IdentityID) (user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByIdentityID", identityID)
+	ret := m.ctrl.Call(m, "FindByIdentityID", ctx, identityID)
 	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByIdentityID indicates an expected call of FindByIdentityID.
-func (mr *MockUserRepositoryMockRecorder) FindByIdentityID(identityID any) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) FindByIdentityID(ctx, identityID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIdentityID", reflect.TypeOf((*MockUserRepository)(nil).FindByIdentityID), identityID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIdentityID", reflect.TypeOf((*MockUserRepository)(nil).FindByIdentityID), ctx, identityID)
 }
 
 // Update mocks base method.
-func (m *MockUserRepository) Update(arg0 user.User) error {
+func (m *MockUserRepository) Update(ctx context.Context, arg1 user.User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0)
+	ret := m.ctrl.Call(m, "Update", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserRepositoryMockRecorder) Update(arg0 any) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Update(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), ctx, arg1)
 }

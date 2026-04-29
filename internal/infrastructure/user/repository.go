@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 
 	"gorm.io/gorm"
@@ -18,8 +19,8 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) Create(u user.User) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
+func (r *userRepository) Create(ctx context.Context, u user.User) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		userModel := UserModel{
 			ID:          u.ID(),
 			DisplayName: u.DisplayName(),
@@ -48,9 +49,9 @@ func (r *userRepository) Create(u user.User) error {
 	})
 }
 
-func (r *userRepository) FindByIdentityID(id identity.IdentityID) (user.User, error) {
+func (r *userRepository) FindByIdentityID(ctx context.Context, id identity.IdentityID) (user.User, error) {
 	var identityModel infraidentity.IdentityModel
-	err := r.db.Where("id = ?", id).First(&identityModel).Error
+	err := r.db.WithContext(ctx).Where("id = ?", id).First(&identityModel).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, identity.ErrIdentityNotFound
 	}
@@ -59,7 +60,7 @@ func (r *userRepository) FindByIdentityID(id identity.IdentityID) (user.User, er
 	}
 
 	var userModel UserModel
-	err = r.db.Where("id = ?", identityModel.UserID).First(&userModel).Error
+	err = r.db.WithContext(ctx).Where("id = ?", identityModel.UserID).First(&userModel).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -68,7 +69,7 @@ func (r *userRepository) FindByIdentityID(id identity.IdentityID) (user.User, er
 	}
 
 	var identityModels []infraidentity.IdentityModel
-	if err := r.db.Where("user_id = ?", userModel.ID).Find(&identityModels).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userModel.ID).Find(&identityModels).Error; err != nil {
 		return nil, err
 	}
 
@@ -87,9 +88,9 @@ func (r *userRepository) FindByIdentityID(id identity.IdentityID) (user.User, er
 	), nil
 }
 
-func (r *userRepository) FindByID(id user.UserID) (user.User, error) {
+func (r *userRepository) FindByID(ctx context.Context, id user.UserID) (user.User, error) {
 	var userModel UserModel
-	err := r.db.Where("id = ?", id).First(&userModel).Error
+	err := r.db.WithContext(ctx).Where("id = ?", id).First(&userModel).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, user.ErrUserNotFound
 	}
@@ -98,7 +99,7 @@ func (r *userRepository) FindByID(id user.UserID) (user.User, error) {
 	}
 
 	var identityModels []infraidentity.IdentityModel
-	if err := r.db.Where("user_id = ?", userModel.ID).Find(&identityModels).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userModel.ID).Find(&identityModels).Error; err != nil {
 		return nil, err
 	}
 
@@ -117,8 +118,8 @@ func (r *userRepository) FindByID(id user.UserID) (user.User, error) {
 	), nil
 }
 
-func (r *userRepository) Update(u user.User) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
+func (r *userRepository) Update(ctx context.Context, u user.User) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		userModel := UserModel{
 			ID:          u.ID(),
 			DisplayName: u.DisplayName(),
