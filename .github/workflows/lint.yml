@@ -15,13 +15,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.25.5"
 
-      - name: Run lint
-        run: go tool golangci-lint run ./...
+      - run: go tool golangci-lint run ./...
