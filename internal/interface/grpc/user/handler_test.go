@@ -7,6 +7,8 @@ import (
 
 	"go.uber.org/mock/gomock"
 	"google.golang.org/genproto/googleapis/type/date"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
 	"github.com/qkitzero/user-service/internal/domain/user"
@@ -18,16 +20,20 @@ func TestCreateUser(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name          string
-		success       bool
 		ctx           context.Context
 		displayName   string
 		year          int32
 		month         int32
 		day           int32
+		callUsecase   bool
 		createUserErr error
+		wantCode      codes.Code
 	}{
-		{"success create user", true, context.Background(), "test user", 2000, 1, 1, nil},
-		{"failure create user error", false, context.Background(), "test user", 2000, 1, 1, fmt.Errorf("create user error")},
+		{"success create user", context.Background(), "test user", 2000, 1, 1, true, nil, codes.OK},
+		{"failure invalid display name", context.Background(), "", 2000, 1, 1, false, nil, codes.InvalidArgument},
+		{"failure invalid birth date", context.Background(), "test user", 2000, 2, 30, false, nil, codes.InvalidArgument},
+		{"failure usecase error", context.Background(), "test user", 2000, 1, 1, true, fmt.Errorf("create user error"), codes.Internal},
+		{"failure status preserved", context.Background(), "test user", 2000, 1, 1, true, status.Error(codes.Unauthenticated, "auth"), codes.Unauthenticated},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -37,13 +43,14 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
+			mockUsecase := mocksappuser.NewMockUserUsecase(ctrl)
 			mockUser := mocksuser.NewMockUser(ctrl)
-			mockUserUsecase.EXPECT().CreateUser(tt.ctx, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.createUserErr).AnyTimes()
-			mockUserID := user.NewUserID()
-			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
+			if tt.callUsecase {
+				mockUsecase.EXPECT().CreateUser(tt.ctx, gomock.Any(), gomock.Any()).Return(mockUser, tt.createUserErr).Times(1)
+				mockUser.EXPECT().ID().Return(user.NewUserID()).AnyTimes()
+			}
 
-			userHandler := NewUserHandler(mockUserUsecase)
+			handler := NewUserHandler(mockUsecase)
 
 			req := &userv1.CreateUserRequest{
 				DisplayName: tt.displayName,
@@ -54,12 +61,9 @@ func TestCreateUser(t *testing.T) {
 				},
 			}
 
-			_, err := userHandler.CreateUser(tt.ctx, req)
-			if tt.success && err != nil {
-				t.Errorf("expected no error, but got %v", err)
-			}
-			if !tt.success && err == nil {
-				t.Errorf("expected error, but got nil")
+			_, err := handler.CreateUser(tt.ctx, req)
+			if got := status.Code(err); got != tt.wantCode {
+				t.Errorf("expected code %v, got %v (err=%v)", tt.wantCode, got, err)
 			}
 		})
 	}
@@ -67,15 +71,27 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	t.Parallel()
+
+	mockUserSample := func(ctrl *gomock.Controller) *mocksuser.MockUser {
+		m := mocksuser.NewMockUser(ctrl)
+		displayName, _ := user.NewDisplayName("test user")
+		birthDate, _ := user.NewBirthDate(2000, 1, 1)
+		m.EXPECT().ID().Return(user.NewUserID()).AnyTimes()
+		m.EXPECT().DisplayName().Return(displayName).AnyTimes()
+		m.EXPECT().BirthDate().Return(birthDate).AnyTimes()
+		return m
+	}
+
 	tests := []struct {
 		name       string
-		success    bool
 		ctx        context.Context
 		getUserErr error
+		wantCode   codes.Code
 	}{
-		{"success get user", true, context.Background(), nil},
-		{"failure get user error", false, context.Background(), fmt.Errorf("get user error")},
-		{"failure user not found error", false, context.Background(), user.ErrUserNotFound},
+		{"success get user", context.Background(), nil, codes.OK},
+		{"failure get user error", context.Background(), fmt.Errorf("get user error"), codes.Internal},
+		{"failure user not found", context.Background(), user.ErrUserNotFound, codes.NotFound},
+		{"failure status preserved", context.Background(), status.Error(codes.Unauthenticated, "auth"), codes.Unauthenticated},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -85,26 +101,14 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
-			mockUser := mocksuser.NewMockUser(ctrl)
-			mockUserID := user.NewUserID()
-			mockDisplayName, _ := user.NewDisplayName("test user")
-			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockUserUsecase.EXPECT().GetUser(tt.ctx).Return(mockUser, tt.getUserErr).AnyTimes()
-			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
-			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
-			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
+			mockUsecase := mocksappuser.NewMockUserUsecase(ctrl)
+			mockUsecase.EXPECT().GetUser(tt.ctx).Return(mockUserSample(ctrl), tt.getUserErr).Times(1)
 
-			userHandler := NewUserHandler(mockUserUsecase)
+			handler := NewUserHandler(mockUsecase)
 
-			req := &userv1.GetUserRequest{}
-
-			_, err := userHandler.GetUser(tt.ctx, req)
-			if tt.success && err != nil {
-				t.Errorf("expected no error, but got %v", err)
-			}
-			if !tt.success && err == nil {
-				t.Errorf("expected error, but got nil")
+			_, err := handler.GetUser(tt.ctx, &userv1.GetUserRequest{})
+			if got := status.Code(err); got != tt.wantCode {
+				t.Errorf("expected code %v, got %v (err=%v)", tt.wantCode, got, err)
 			}
 		})
 	}
@@ -112,19 +116,34 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	t.Parallel()
+
+	mockUserSample := func(ctrl *gomock.Controller) *mocksuser.MockUser {
+		m := mocksuser.NewMockUser(ctrl)
+		displayName, _ := user.NewDisplayName("test user")
+		birthDate, _ := user.NewBirthDate(2000, 1, 1)
+		m.EXPECT().ID().Return(user.NewUserID()).AnyTimes()
+		m.EXPECT().DisplayName().Return(displayName).AnyTimes()
+		m.EXPECT().BirthDate().Return(birthDate).AnyTimes()
+		return m
+	}
+
 	tests := []struct {
 		name          string
-		success       bool
 		ctx           context.Context
 		displayName   string
 		year          int32
 		month         int32
 		day           int32
+		callUsecase   bool
 		updateUserErr error
+		wantCode      codes.Code
 	}{
-		{"success update user", true, context.Background(), "updated test user", 2000, 1, 1, nil},
-		{"failure update user error", false, context.Background(), "updated test user", 2000, 1, 1, fmt.Errorf("update user error")},
-		{"failure user not found error", false, context.Background(), "updated test user", 2000, 1, 1, user.ErrUserNotFound},
+		{"success update user", context.Background(), "updated test user", 2000, 1, 1, true, nil, codes.OK},
+		{"failure invalid display name", context.Background(), "", 2000, 1, 1, false, nil, codes.InvalidArgument},
+		{"failure invalid birth date", context.Background(), "updated test user", 2000, 2, 30, false, nil, codes.InvalidArgument},
+		{"failure usecase error", context.Background(), "updated test user", 2000, 1, 1, true, fmt.Errorf("update user error"), codes.Internal},
+		{"failure user not found", context.Background(), "updated test user", 2000, 1, 1, true, user.ErrUserNotFound, codes.NotFound},
+		{"failure status preserved", context.Background(), "updated test user", 2000, 1, 1, true, status.Error(codes.Unauthenticated, "auth"), codes.Unauthenticated},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -134,17 +153,12 @@ func TestUpdateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUserUsecase := mocksappuser.NewMockUserUsecase(ctrl)
-			mockUser := mocksuser.NewMockUser(ctrl)
-			mockUserID, _ := user.NewUserIDFromString("fe8c2263-bbac-4bb9-a41d-b04f5afc4425")
-			mockDisplayName, _ := user.NewDisplayName("test user")
-			mockBirthDate, _ := user.NewBirthDate(2000, 1, 1)
-			mockUserUsecase.EXPECT().UpdateUser(tt.ctx, tt.displayName, tt.year, tt.month, tt.day).Return(mockUser, tt.updateUserErr).AnyTimes()
-			mockUser.EXPECT().ID().Return(mockUserID).AnyTimes()
-			mockUser.EXPECT().DisplayName().Return(mockDisplayName).AnyTimes()
-			mockUser.EXPECT().BirthDate().Return(mockBirthDate).AnyTimes()
+			mockUsecase := mocksappuser.NewMockUserUsecase(ctrl)
+			if tt.callUsecase {
+				mockUsecase.EXPECT().UpdateUser(tt.ctx, gomock.Any(), gomock.Any()).Return(mockUserSample(ctrl), tt.updateUserErr).Times(1)
+			}
 
-			userHandler := NewUserHandler(mockUserUsecase)
+			handler := NewUserHandler(mockUsecase)
 
 			req := &userv1.UpdateUserRequest{
 				DisplayName: tt.displayName,
@@ -155,12 +169,9 @@ func TestUpdateUser(t *testing.T) {
 				},
 			}
 
-			_, err := userHandler.UpdateUser(tt.ctx, req)
-			if tt.success && err != nil {
-				t.Errorf("expected no error, but got %v", err)
-			}
-			if !tt.success && err == nil {
-				t.Errorf("expected error, but got nil")
+			_, err := handler.UpdateUser(tt.ctx, req)
+			if got := status.Code(err); got != tt.wantCode {
+				t.Errorf("expected code %v, got %v (err=%v)", tt.wantCode, got, err)
 			}
 		})
 	}
