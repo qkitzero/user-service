@@ -9,6 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/qkitzero/user-service/internal/domain/group"
+	"github.com/qkitzero/user-service/internal/domain/identity"
 	"github.com/qkitzero/user-service/internal/domain/membership"
 	"github.com/qkitzero/user-service/internal/domain/user"
 	mocksappauth "github.com/qkitzero/user-service/mocks/application/auth"
@@ -38,6 +39,7 @@ func TestCreateGroup(t *testing.T) {
 		{"success create group", true, nil, nil, nil},
 		{"failure verify token error", false, fmt.Errorf("verify token error"), nil, nil},
 		{"failure find user error", false, nil, errors.New("find user error"), nil},
+		{"failure identity not found", false, nil, identity.ErrIdentityNotFound, nil},
 		{"failure create error", false, nil, nil, errors.New("create error")},
 	}
 	for _, tt := range tests {
