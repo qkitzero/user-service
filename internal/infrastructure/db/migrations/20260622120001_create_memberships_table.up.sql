@@ -8,3 +8,5 @@ CREATE TABLE memberships (
   FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
   FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_memberships_group_id ON memberships(group_id);
