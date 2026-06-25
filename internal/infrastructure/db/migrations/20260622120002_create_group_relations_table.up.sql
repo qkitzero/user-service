@@ -5,3 +5,5 @@ CREATE TABLE group_relations (
   FOREIGN KEY (parent_id) REFERENCES groups(id) ON DELETE CASCADE,
   FOREIGN KEY (child_id)  REFERENCES groups(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_group_relations_child_id ON group_relations(child_id);
