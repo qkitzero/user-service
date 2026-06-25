@@ -32,6 +32,11 @@ mock-gen:
 	go tool mockgen -source=internal/domain/user/repository.go -destination=mocks/domain/user/mock_repository.go -package=mocks
 	go tool mockgen -source=internal/domain/identity/identity.go -destination=mocks/domain/identity/mock_identity.go -package=mocks
 	go tool mockgen -source=internal/application/user/usecase.go -destination=mocks/application/user/mock_usecase.go -package=mocks
+	go tool mockgen -source=internal/domain/group/group.go -destination=mocks/domain/group/mock_group.go -package=mocks
+	go tool mockgen -source=internal/domain/group/repository.go -destination=mocks/domain/group/mock_repository.go -package=mocks
+	go tool mockgen -source=internal/application/group/usecase.go -destination=mocks/application/group/mock_usecase.go -package=mocks
+	go tool mockgen -source=internal/domain/membership/membership.go -destination=mocks/domain/membership/mock_membership.go -package=mocks
+	go tool mockgen -source=internal/domain/membership/repository.go -destination=mocks/domain/membership/mock_repository.go -package=mocks
 	go tool mockgen -source=internal/application/auth/service.go -destination=mocks/application/auth/mock_service.go -package=mocks
 	go tool mockgen -destination=mocks/external/auth/v1/mock_client.go -package=mocks github.com/qkitzero/auth-service/gen/go/auth/v1 AuthServiceClient
 
