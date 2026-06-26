@@ -19,11 +19,16 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	authv1 "github.com/qkitzero/auth-service/gen/go/auth/v1"
+	groupv1 "github.com/qkitzero/user-service/gen/go/group/v1"
 	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
+	appgroup "github.com/qkitzero/user-service/internal/application/group"
 	appuser "github.com/qkitzero/user-service/internal/application/user"
 	apiauth "github.com/qkitzero/user-service/internal/infrastructure/api/auth"
 	"github.com/qkitzero/user-service/internal/infrastructure/db"
+	infragroup "github.com/qkitzero/user-service/internal/infrastructure/group"
+	inframembership "github.com/qkitzero/user-service/internal/infrastructure/membership"
 	infrauser "github.com/qkitzero/user-service/internal/infrastructure/user"
+	grpcgroup "github.com/qkitzero/user-service/internal/interface/grpc/group"
 	grpcuser "github.com/qkitzero/user-service/internal/interface/grpc/user"
 )
 
@@ -122,18 +127,24 @@ func run() error {
 
 	authServiceClient := authv1.NewAuthServiceClient(conn)
 	userRepository := infrauser.NewUserRepository(gormDB)
+	groupRepository := infragroup.NewGroupRepository(gormDB)
+	membershipRepository := inframembership.NewMembershipRepository(gormDB)
 
 	authService := apiauth.NewAuthService(authServiceClient)
 	userUsecase := appuser.NewUserUsecase(authService, userRepository)
+	groupUsecase := appgroup.NewGroupUsecase(authService, groupRepository, membershipRepository, userRepository)
 
 	healthServer := health.NewServer()
 	userHandler := grpcuser.NewUserHandler(userUsecase)
+	groupHandler := grpcgroup.NewGroupHandler(groupUsecase)
 
 	grpc_health_v1.RegisterHealthServer(server, healthServer)
 	userv1.RegisterUserServiceServer(server, userHandler)
+	groupv1.RegisterGroupServiceServer(server, groupHandler)
 
 	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
 	healthServer.SetServingStatus("user", grpc_health_v1.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus("group", grpc_health_v1.HealthCheckResponse_SERVING)
 
 	if cfg.Env == "development" {
 		reflection.Register(server)

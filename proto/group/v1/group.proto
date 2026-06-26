@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package group.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/qkitzero/user-service/gen/go/group/v1";
+
+service GroupService {
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups"
+      body: "*"
+    };
+  }
+  rpc GetGroup(GetGroupRequest) returns (GetGroupResponse) {
+    option (google.api.http) = {get: "/v1/groups/{group_id}"};
+  }
+  rpc UpdateGroup(UpdateGroupRequest) returns (UpdateGroupResponse) {
+    option (google.api.http) = {
+      patch: "/v1/groups/{group_id}"
+      body: "*"
+    };
+  }
+  rpc DeleteGroup(DeleteGroupRequest) returns (DeleteGroupResponse) {
+    option (google.api.http) = {delete: "/v1/groups/{group_id}"};
+  }
+  rpc ListChildGroups(ListChildGroupsRequest) returns (ListChildGroupsResponse) {
+    option (google.api.http) = {get: "/v1/groups/{group_id}/children"};
+  }
+  rpc ListParentGroups(ListParentGroupsRequest) returns (ListParentGroupsResponse) {
+    option (google.api.http) = {get: "/v1/groups/{group_id}/parents"};
+  }
+  rpc AddChildGroup(AddChildGroupRequest) returns (AddChildGroupResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups/{parent_group_id}/children"
+      body: "*"
+    };
+  }
+  rpc RemoveChildGroup(RemoveChildGroupRequest) returns (RemoveChildGroupResponse) {
+    option (google.api.http) = {delete: "/v1/groups/{parent_group_id}/children/{child_group_id}"};
+  }
+  rpc AddMember(AddMemberRequest) returns (AddMemberResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups/{group_id}/members"
+      body: "*"
+    };
+  }
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse) {
+    option (google.api.http) = {
+      patch: "/v1/groups/{group_id}/members/{user_id}"
+      body: "*"
+    };
+  }
+  rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse) {
+    option (google.api.http) = {delete: "/v1/groups/{group_id}/members/{user_id}"};
+  }
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse) {
+    option (google.api.http) = {get: "/v1/groups/{group_id}/members"};
+  }
+  rpc ListMyGroups(ListMyGroupsRequest) returns (ListMyGroupsResponse) {
+    option (google.api.http) = {get: "/v1/me/groups"};
+  }
+}
+
+message Group {
+  string group_id = 1;
+  string name = 2;
+}
+
+message CreateGroupRequest {
+  string name = 1;
+}
+
+message CreateGroupResponse {
+  string group_id = 1;
+}
+
+message GetGroupRequest {
+  string group_id = 1;
+}
+
+message GetGroupResponse {
+  Group group = 1;
+}
+
+message UpdateGroupRequest {
+  string group_id = 1;
+  string name = 2;
+}
+
+message UpdateGroupResponse {
+  Group group = 1;
+}
+
+message DeleteGroupRequest {
+  string group_id = 1;
+}
+
+message DeleteGroupResponse {}
+
+message ListChildGroupsRequest {
+  string group_id = 1;
+}
+
+message ListChildGroupsResponse {
+  repeated Group groups = 1;
+}
+
+message ListParentGroupsRequest {
+  string group_id = 1;
+}
+
+message ListParentGroupsResponse {
+  repeated Group groups = 1;
+}
+
+message AddChildGroupRequest {
+  string parent_group_id = 1;
+  string child_group_id = 2;
+}
+
+message AddChildGroupResponse {}
+
+message RemoveChildGroupRequest {
+  string parent_group_id = 1;
+  string child_group_id = 2;
+}
+
+message RemoveChildGroupResponse {}
+
+message Member {
+  string user_id = 1;
+  string role = 2;
+}
+
+message AddMemberRequest {
+  string group_id = 1;
+  string user_id = 2;
+  string role = 3;
+}
+
+message AddMemberResponse {
+  Member member = 1;
+}
+
+message UpdateMemberRoleRequest {
+  string group_id = 1;
+  string user_id = 2;
+  string role = 3;
+}
+
+message UpdateMemberRoleResponse {
+  Member member = 1;
+}
+
+message RemoveMemberRequest {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+message RemoveMemberResponse {}
+
+message ListMembersRequest {
+  string group_id = 1;
+}
+
+message ListMembersResponse {
+  repeated Member members = 1;
+}
+
+message ListMyGroupsRequest {}
+
+message GroupMembership {
+  Group group = 1;
+  string role = 2;
+}
+
+message ListMyGroupsResponse {
+  repeated GroupMembership groups = 1;
+}
