@@ -32,7 +32,23 @@ classDiagram
         id
     }
 
+    class Group {
+        id
+        name
+        createdAt
+        updatedAt
+    }
+
+    class Membership {
+        id
+        role
+        joinedAt
+    }
+
     User "1" -- "0..*" Identity
+    User "1" -- "0..*" Membership
+    Group "1" -- "0..*" Membership
+    Group "0..*" -- "0..*" Group
 ```
 
 ```mermaid
