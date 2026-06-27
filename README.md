@@ -48,7 +48,7 @@ classDiagram
     User "1" -- "0..*" Identity
     User "1" -- "0..*" Membership
     Group "1" -- "0..*" Membership
-    Group "0..*" -- "0..*" Group
+    Group "0..*" -- "0..*" Group : parent/child
 ```
 
 ```mermaid
