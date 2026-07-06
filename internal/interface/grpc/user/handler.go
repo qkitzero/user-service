@@ -27,6 +27,19 @@ func NewUserHandler(
 	}
 }
 
+func mapError(err error, op string) error {
+	if _, ok := status.FromError(err); ok && status.Code(err) != codes.Unknown {
+		return err
+	}
+	switch {
+	case errors.Is(err, domainuser.ErrUserNotFound):
+		return status.Error(codes.NotFound, err.Error())
+	default:
+		log.Printf("%s: internal error: %v", op, err)
+		return status.Error(codes.Internal, "internal error")
+	}
+}
+
 func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.CreateUserResponse, error) {
 	displayName, err := domainuser.NewDisplayName(req.GetDisplayName())
 	if err != nil {
@@ -39,11 +52,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 
 	user, err := h.userUsecase.CreateUser(ctx, displayName, birthDate)
 	if err != nil {
-		if _, ok := status.FromError(err); ok {
-			return nil, err
-		}
-		log.Printf("CreateUser: internal error: %v", err)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, mapError(err, "CreateUser")
 	}
 
 	return &userv1.CreateUserResponse{
@@ -54,14 +63,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 func (h *UserHandler) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
 	user, err := h.userUsecase.GetUser(ctx)
 	if err != nil {
-		if _, ok := status.FromError(err); ok {
-			return nil, err
-		}
-		if errors.Is(err, domainuser.ErrUserNotFound) {
-			return nil, status.Error(codes.NotFound, err.Error())
-		}
-		log.Printf("GetUser: internal error: %v", err)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, mapError(err, "GetUser")
 	}
 
 	return &userv1.GetUserResponse{
@@ -87,14 +89,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 
 	user, err := h.userUsecase.UpdateUser(ctx, displayName, birthDate)
 	if err != nil {
-		if _, ok := status.FromError(err); ok {
-			return nil, err
-		}
-		if errors.Is(err, domainuser.ErrUserNotFound) {
-			return nil, status.Error(codes.NotFound, err.Error())
-		}
-		log.Printf("UpdateUser: internal error: %v", err)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, mapError(err, "UpdateUser")
 	}
 
 	return &userv1.UpdateUserResponse{
