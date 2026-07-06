@@ -1,6 +1,9 @@
 package user
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestNewDisplayName(t *testing.T) {
 	t.Parallel()
@@ -10,7 +13,9 @@ func TestNewDisplayName(t *testing.T) {
 		displayName string
 	}{
 		{"success new display name", true, "test user"},
+		{"success max length", true, strings.Repeat("a", maxDisplayNameLength)},
 		{"failure empty display name", false, ""},
+		{"failure too long", false, strings.Repeat("a", maxDisplayNameLength+1)},
 	}
 	for _, tt := range tests {
 		tt := tt
