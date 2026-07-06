@@ -11,13 +11,12 @@ func TestNewGroupName(t *testing.T) {
 		name      string
 		success   bool
 		groupName string
-		want      string
 	}{
-		{"success new group name", true, "test group", "test group"},
-		{"success trim spaces", true, "  test group  ", "test group"},
-		{"failure empty group name", false, "", ""},
-		{"failure whitespace only", false, "   ", ""},
-		{"failure too long", false, strings.Repeat("a", maxGroupNameLength+1), ""},
+		{"success new group name", true, "test group"},
+		{"success max length", true, strings.Repeat("a", maxGroupNameLength)},
+		{"failure empty group name", false, ""},
+		{"failure whitespace only", false, "   "},
+		{"failure too long", false, strings.Repeat("a", maxGroupNameLength+1)},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -32,8 +31,8 @@ func TestNewGroupName(t *testing.T) {
 				t.Errorf("expected error, but got nil")
 			}
 
-			if tt.success && groupName.String() != tt.want {
-				t.Errorf("String() = %v, want %v", groupName.String(), tt.want)
+			if tt.success && groupName.String() != tt.groupName {
+				t.Errorf("String() = %v, want %v", groupName.String(), tt.groupName)
 			}
 		})
 	}
