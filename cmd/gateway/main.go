@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
+	groupv1 "github.com/qkitzero/user-service/gen/go/group/v1"
 	userv1 "github.com/qkitzero/user-service/gen/go/user/v1"
 )
 
@@ -104,6 +105,10 @@ func run() error {
 
 	if err := userv1.RegisterUserServiceHandler(ctx, mux, conn); err != nil {
 		return fmt.Errorf("register user handler: %w", err)
+	}
+
+	if err := groupv1.RegisterGroupServiceHandler(ctx, mux, conn); err != nil {
+		return fmt.Errorf("register group handler: %w", err)
 	}
 
 	srv := &http.Server{
