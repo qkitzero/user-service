@@ -527,24 +527,29 @@ func TestRemoveMember(t *testing.T) {
 	groupID := group.NewGroupID()
 
 	tests := []struct {
-		name         string
-		success      bool
-		targetID     user.UserID
-		operatorRole membership.Role
-		targetRole   membership.Role
-		operatorFind error
-		targetFind   error
-		ownerCount   int
-		deleteErr    error
+		name           string
+		success        bool
+		targetID       user.UserID
+		verifyErr      error
+		operatorRole   membership.Role
+		targetRole     membership.Role
+		operatorFind   error
+		targetFind     error
+		ownerCount     int
+		countOwnersErr error
+		deleteErr      error
 	}{
-		{"success self leave", true, operatorID, membership.RoleMember, membership.RoleMember, nil, nil, 0, nil},
-		{"success admin removes member", true, otherID, membership.RoleAdmin, membership.RoleMember, nil, nil, 0, nil},
-		{"failure permission denied", false, otherID, membership.RoleMember, membership.RoleMember, nil, nil, 0, nil},
-		{"failure last owner", false, operatorID, membership.RoleOwner, membership.RoleOwner, nil, nil, 1, nil},
-		{"success owner leaves when others exist", true, operatorID, membership.RoleOwner, membership.RoleOwner, nil, nil, 2, nil},
-		{"failure operator not member", false, otherID, membership.RoleAdmin, membership.RoleMember, membership.ErrMembershipNotFound, nil, 0, nil},
-		{"failure target not found", false, otherID, membership.RoleAdmin, membership.RoleMember, nil, membership.ErrMembershipNotFound, 0, nil},
-		{"failure delete error", false, otherID, membership.RoleAdmin, membership.RoleMember, nil, nil, 0, errors.New("delete")},
+		{"success self leave", true, operatorID, nil, membership.RoleMember, membership.RoleMember, nil, nil, 0, nil, nil},
+		{"success admin removes member", true, otherID, nil, membership.RoleAdmin, membership.RoleMember, nil, nil, 0, nil, nil},
+		{"failure verify token", false, otherID, errors.New("verify"), membership.RoleAdmin, membership.RoleMember, nil, nil, 0, nil, nil},
+		{"failure permission denied", false, otherID, nil, membership.RoleMember, membership.RoleMember, nil, nil, 0, nil, nil},
+		{"failure last owner", false, operatorID, nil, membership.RoleOwner, membership.RoleOwner, nil, nil, 1, nil, nil},
+		{"success owner leaves when others exist", true, operatorID, nil, membership.RoleOwner, membership.RoleOwner, nil, nil, 2, nil, nil},
+		{"failure count owners error", false, operatorID, nil, membership.RoleOwner, membership.RoleOwner, nil, nil, 2, errors.New("count owners error"), nil},
+		{"failure operator not member", false, otherID, nil, membership.RoleAdmin, membership.RoleMember, membership.ErrMembershipNotFound, nil, 0, nil, nil},
+		{"failure self leave operator lookup error", false, operatorID, nil, membership.RoleMember, membership.RoleMember, errors.New("operator lookup error"), nil, 0, nil, nil},
+		{"failure target not found", false, otherID, nil, membership.RoleAdmin, membership.RoleMember, nil, membership.ErrMembershipNotFound, 0, nil, nil},
+		{"failure delete error", false, otherID, nil, membership.RoleAdmin, membership.RoleMember, nil, nil, 0, nil, errors.New("delete")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -558,21 +563,23 @@ func TestRemoveMember(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, nil, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
 			targetMembership := mocksmembership.NewMockMembership(ctrl)
 			targetMembership.EXPECT().Role().Return(tt.targetRole).AnyTimes()
 
+			lookupCount := 0
 			mockMembershipRepo.EXPECT().FindByUserAndGroup(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-				func(_ context.Context, uid user.UserID, _ group.GroupID) (membership.Membership, error) {
-					if uid == operatorID && tt.targetID != operatorID {
+				func(_ context.Context, _ user.UserID, _ group.GroupID) (membership.Membership, error) {
+					lookupCount++
+					if lookupCount == 1 {
 						return operatorMembership, tt.operatorFind
 					}
 					return targetMembership, tt.targetFind
 				}).AnyTimes()
-			mockMembershipRepo.EXPECT().CountOwners(gomock.Any(), gomock.Any()).Return(tt.ownerCount, nil).AnyTimes()
+			mockMembershipRepo.EXPECT().CountOwners(gomock.Any(), gomock.Any()).Return(tt.ownerCount, tt.countOwnersErr).AnyTimes()
 			mockMembershipRepo.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.deleteErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
@@ -583,6 +590,12 @@ func TestRemoveMember(t *testing.T) {
 			}
 			if !tt.success && err == nil {
 				t.Errorf("expected error, but got nil")
+			}
+			if tt.verifyErr != nil && !errors.Is(err, tt.verifyErr) {
+				t.Errorf("expected error %v, but got %v", tt.verifyErr, err)
+			}
+			if tt.countOwnersErr != nil && !errors.Is(err, tt.countOwnersErr) {
+				t.Errorf("expected error %v, but got %v", tt.countOwnersErr, err)
 			}
 		})
 	}
