@@ -18,11 +18,13 @@ import (
 	mocksuser "github.com/qkitzero/user-service/mocks/domain/user"
 )
 
-func setupAuth(ctrl *gomock.Controller, mockAuth *mocksappauth.MockAuthService, mockUserRepo *mocksuser.MockUserRepository, callerID user.UserID, verifyErr, findUserErr error) {
+const validIdentityID = "google-oauth2|000000000000000000000"
+
+func setupAuth(ctrl *gomock.Controller, mockAuth *mocksappauth.MockAuthService, mockUserRepo *mocksuser.MockUserRepository, callerID user.UserID, identityID string, verifyErr, findUserErr error) {
 	mockUser := mocksuser.NewMockUser(ctrl)
 	mockUser.EXPECT().ID().Return(callerID).AnyTimes()
-	mockAuth.EXPECT().VerifyToken(gomock.Any()).Return("google-oauth2|000000000000000000000", verifyErr).AnyTimes()
-	mockUserRepo.EXPECT().FindByIdentityID(gomock.Any(), gomock.Any()).Return(mockUser, findUserErr).AnyTimes()
+	mockAuth.EXPECT().VerifyToken(gomock.Any()).Return(identityID, verifyErr).AnyTimes()
+	mockUserRepo.EXPECT().FindByIdentityID(gomock.Any(), gomock.Eq(identity.IdentityID(identityID))).Return(mockUser, findUserErr).AnyTimes()
 }
 
 func TestCreateGroup(t *testing.T) {
@@ -32,15 +34,17 @@ func TestCreateGroup(t *testing.T) {
 	tests := []struct {
 		name           string
 		success        bool
+		identityID     string
 		verifyTokenErr error
 		findUserErr    error
 		createErr      error
 	}{
-		{"success create group", true, nil, nil, nil},
-		{"failure verify token error", false, fmt.Errorf("verify token error"), nil, nil},
-		{"failure find user error", false, nil, errors.New("find user error"), nil},
-		{"failure identity not found", false, nil, identity.ErrIdentityNotFound, nil},
-		{"failure create error", false, nil, nil, errors.New("create error")},
+		{"success create group", true, validIdentityID, nil, nil, nil},
+		{"failure verify token error", false, validIdentityID, fmt.Errorf("verify token error"), nil, nil},
+		{"failure invalid identity id", false, "", nil, nil, nil},
+		{"failure find user error", false, validIdentityID, nil, errors.New("find user error"), nil},
+		{"failure identity not found", false, validIdentityID, nil, identity.ErrIdentityNotFound, nil},
+		{"failure create error", false, validIdentityID, nil, nil, errors.New("create error")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -54,7 +58,7 @@ func TestCreateGroup(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, user.NewUserID(), tt.verifyTokenErr, tt.findUserErr)
+			setupAuth(ctrl, mockAuth, mockUserRepo, user.NewUserID(), tt.identityID, tt.verifyTokenErr, tt.findUserErr)
 			mockGroupRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.createErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
@@ -95,7 +99,7 @@ func TestGetGroup(t *testing.T) {
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
 			mockGroup := mocksgroup.NewMockGroup(ctrl)
-			mockAuth.EXPECT().VerifyToken(gomock.Any()).Return("google-oauth2|000000000000000000000", tt.verifyTokenErr).AnyTimes()
+			mockAuth.EXPECT().VerifyToken(gomock.Any()).Return(validIdentityID, tt.verifyTokenErr).AnyTimes()
 			mockGroupRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(mockGroup, tt.findByIDErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
@@ -144,7 +148,7 @@ func TestUpdateGroup(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -198,7 +202,7 @@ func TestDeleteGroup(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -262,7 +266,7 @@ func TestAddChildGroup(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -330,7 +334,7 @@ func TestRemoveChildGroup(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -374,7 +378,7 @@ func TestListChildGroups(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			mockAuth.EXPECT().VerifyToken(gomock.Any()).Return("google-oauth2|000000000000000000000", tt.verifyTokenErr).AnyTimes()
+			mockAuth.EXPECT().VerifyToken(gomock.Any()).Return(validIdentityID, tt.verifyTokenErr).AnyTimes()
 			mockGroupRepo.EXPECT().FindChildren(gomock.Any(), gomock.Any()).Return(nil, tt.findChildrenErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
@@ -414,7 +418,7 @@ func TestListParentGroups(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			mockAuth.EXPECT().VerifyToken(gomock.Any()).Return("google-oauth2|000000000000000000000", tt.verifyTokenErr).AnyTimes()
+			mockAuth.EXPECT().VerifyToken(gomock.Any()).Return(validIdentityID, tt.verifyTokenErr).AnyTimes()
 			mockGroupRepo.EXPECT().FindParents(gomock.Any(), gomock.Any()).Return(nil, tt.findParentsErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
@@ -468,7 +472,7 @@ func TestAddMember(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			targetUser := mocksuser.NewMockUser(ctrl)
 			mockUserRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(targetUser, tt.targetUserErr).AnyTimes()
@@ -539,7 +543,7 @@ func TestRemoveMember(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, nil, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, nil, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -606,7 +610,7 @@ func TestUpdateMemberRole(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, nil, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, nil, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -661,7 +665,7 @@ func TestListMembers(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, user.NewUserID(), tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, user.NewUserID(), validIdentityID, tt.verifyErr, nil)
 
 			mockMembershipRepo.EXPECT().ListByGroupID(gomock.Any(), gomock.Any()).Return(nil, tt.listErr).AnyTimes()
 
@@ -704,7 +708,7 @@ func TestListMyGroups(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, user.NewUserID(), tt.verifyErr, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, user.NewUserID(), validIdentityID, tt.verifyErr, nil)
 
 			gid := group.NewGroupID()
 			mockMembership := mocksmembership.NewMockMembership(ctrl)
