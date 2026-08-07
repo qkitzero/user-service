@@ -179,6 +179,91 @@ func TestFindByID(t *testing.T) {
 	}
 }
 
+func TestFindByIDs(t *testing.T) {
+	t.Parallel()
+	wantNames := []string{"first group", "second group"}
+
+	tests := []struct {
+		name     string
+		success  bool
+		emptyIDs bool
+		wantLen  int
+		setup    func(mock sqlmock.Sqlmock, groupIDs []group.GroupID)
+	}{
+		{
+			name:    "success find groups by ids",
+			success: true,
+			wantLen: 2,
+			setup: func(mock sqlmock.Sqlmock, groupIDs []group.GroupID) {
+				rows := sqlmock.NewRows([]string{"id", "name", "created_at", "updated_at"}).
+					AddRow(groupIDs[0], wantNames[0], time.Now(), time.Now()).
+					AddRow(groupIDs[1], wantNames[1], time.Now(), time.Now())
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "groups" WHERE id IN ($1,$2)`)).
+					WithArgs(groupIDs[0], groupIDs[1]).
+					WillReturnRows(rows)
+			},
+		},
+		{
+			name:     "success empty ids",
+			success:  true,
+			emptyIDs: true,
+			wantLen:  0,
+			setup:    func(mock sqlmock.Sqlmock, groupIDs []group.GroupID) {},
+		},
+		{
+			name:    "failure find groups error",
+			success: false,
+			wantLen: 0,
+			setup: func(mock sqlmock.Sqlmock, groupIDs []group.GroupID) {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "groups" WHERE id IN ($1,$2)`)).
+					WithArgs(groupIDs[0], groupIDs[1]).
+					WillReturnError(errors.New("find groups error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			gormDB, mock := newTestGormDB(t)
+
+			groupIDs := []group.GroupID{group.NewGroupID(), group.NewGroupID()}
+			tt.setup(mock, groupIDs)
+
+			repo := NewGroupRepository(gormDB)
+
+			ids := groupIDs
+			if tt.emptyIDs {
+				ids = []group.GroupID{}
+			}
+
+			groups, err := repo.FindByIDs(context.Background(), ids)
+			if tt.success && err != nil {
+				t.Errorf("expected no error, but got %v", err)
+			}
+			if !tt.success && err == nil {
+				t.Errorf("expected error, but got nil")
+			}
+			if tt.success && len(groups) != tt.wantLen {
+				t.Fatalf("len = %d, want %d", len(groups), tt.wantLen)
+			}
+			for i := range groups {
+				if got := groups[i].ID(); got != groupIDs[i] {
+					t.Errorf("group id = %v, want %v", got, groupIDs[i])
+				}
+				if got := groups[i].Name().String(); got != wantNames[i] {
+					t.Errorf("name = %v, want %v", got, wantNames[i])
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
