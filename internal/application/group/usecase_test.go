@@ -608,23 +608,27 @@ func TestUpdateMemberRole(t *testing.T) {
 	groupID := group.NewGroupID()
 
 	tests := []struct {
-		name         string
-		success      bool
-		operatorRole membership.Role
-		targetRole   membership.Role
-		newRole      membership.Role
-		operatorFind error
-		targetFind   error
-		ownerCount   int
-		updateErr    error
+		name           string
+		success        bool
+		verifyErr      error
+		operatorRole   membership.Role
+		targetRole     membership.Role
+		newRole        membership.Role
+		operatorFind   error
+		targetFind     error
+		ownerCount     int
+		countOwnersErr error
+		updateErr      error
 	}{
-		{"success owner promotes member", true, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, nil},
-		{"failure not owner", false, membership.RoleAdmin, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, nil},
-		{"failure last owner downgrade", false, membership.RoleOwner, membership.RoleOwner, membership.RoleMember, nil, nil, 1, nil},
-		{"success downgrade when others exist", true, membership.RoleOwner, membership.RoleOwner, membership.RoleMember, nil, nil, 2, nil},
-		{"failure operator not member", false, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, membership.ErrMembershipNotFound, nil, 0, nil},
-		{"failure target not found", false, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, membership.ErrMembershipNotFound, 0, nil},
-		{"failure update error", false, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, errors.New("update")},
+		{"success owner promotes member", true, nil, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, nil, nil},
+		{"failure verify token", false, errors.New("verify"), membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, nil, nil},
+		{"failure not owner", false, nil, membership.RoleAdmin, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, nil, nil},
+		{"failure last owner downgrade", false, nil, membership.RoleOwner, membership.RoleOwner, membership.RoleMember, nil, nil, 1, nil, nil},
+		{"success downgrade when others exist", true, nil, membership.RoleOwner, membership.RoleOwner, membership.RoleMember, nil, nil, 2, nil, nil},
+		{"failure count owners error", false, nil, membership.RoleOwner, membership.RoleOwner, membership.RoleMember, nil, nil, 2, errors.New("count owners error"), nil},
+		{"failure operator not member", false, nil, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, membership.ErrMembershipNotFound, nil, 0, nil, nil},
+		{"failure target not found", false, nil, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, membership.ErrMembershipNotFound, 0, nil, nil},
+		{"failure update error", false, nil, membership.RoleOwner, membership.RoleMember, membership.RoleAdmin, nil, nil, 0, nil, errors.New("update")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -638,7 +642,7 @@ func TestUpdateMemberRole(t *testing.T) {
 			mockUserRepo := mocksuser.NewMockUserRepository(ctrl)
 			mockMembershipRepo := mocksmembership.NewMockMembershipRepository(ctrl)
 			mockGroupRepo := mocksgroup.NewMockGroupRepository(ctrl)
-			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, nil, nil)
+			setupAuth(ctrl, mockAuth, mockUserRepo, operatorID, validIdentityID, tt.verifyErr, nil)
 
 			operatorMembership := mocksmembership.NewMockMembership(ctrl)
 			operatorMembership.EXPECT().Role().Return(tt.operatorRole).AnyTimes()
@@ -646,14 +650,16 @@ func TestUpdateMemberRole(t *testing.T) {
 			targetMembership.EXPECT().Role().Return(tt.targetRole).AnyTimes()
 			targetMembership.EXPECT().ChangeRole(gomock.Any()).AnyTimes()
 
+			lookupCount := 0
 			mockMembershipRepo.EXPECT().FindByUserAndGroup(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-				func(_ context.Context, uid user.UserID, _ group.GroupID) (membership.Membership, error) {
-					if uid == operatorID {
+				func(_ context.Context, _ user.UserID, _ group.GroupID) (membership.Membership, error) {
+					lookupCount++
+					if lookupCount == 1 {
 						return operatorMembership, tt.operatorFind
 					}
 					return targetMembership, tt.targetFind
 				}).AnyTimes()
-			mockMembershipRepo.EXPECT().CountOwners(gomock.Any(), gomock.Any()).Return(tt.ownerCount, nil).AnyTimes()
+			mockMembershipRepo.EXPECT().CountOwners(gomock.Any(), gomock.Any()).Return(tt.ownerCount, tt.countOwnersErr).AnyTimes()
 			mockMembershipRepo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(tt.updateErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
@@ -664,6 +670,12 @@ func TestUpdateMemberRole(t *testing.T) {
 			}
 			if !tt.success && err == nil {
 				t.Errorf("expected error, but got nil")
+			}
+			if tt.verifyErr != nil && !errors.Is(err, tt.verifyErr) {
+				t.Errorf("expected error %v, but got %v", tt.verifyErr, err)
+			}
+			if tt.countOwnersErr != nil && !errors.Is(err, tt.countOwnersErr) {
+				t.Errorf("expected error %v, but got %v", tt.countOwnersErr, err)
 			}
 		})
 	}
