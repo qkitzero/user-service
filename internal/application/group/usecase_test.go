@@ -730,11 +730,14 @@ func TestListMyGroups(t *testing.T) {
 		verifyErr    error
 		listErr      error
 		findByIDsErr error
+		missingGroup bool
+		wantLen      int
 	}{
-		{"success list my groups", true, nil, nil, nil},
-		{"failure verify token", false, errors.New("verify"), nil, nil},
-		{"failure list error", false, nil, errors.New("list"), nil},
-		{"failure find groups error", false, nil, nil, errors.New("find groups error")},
+		{"success list my groups", true, nil, nil, nil, false, 1},
+		{"success skip membership without group", true, nil, nil, nil, true, 0},
+		{"failure verify token", false, errors.New("verify"), nil, nil, false, 0},
+		{"failure list error", false, nil, errors.New("list"), nil, false, 0},
+		{"failure find groups error", false, nil, nil, errors.New("find groups error"), false, 0},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -761,17 +764,32 @@ func TestListMyGroups(t *testing.T) {
 			if tt.listErr != nil {
 				memberships = nil
 			}
+			groups := []group.Group{mockGroup}
+			if tt.missingGroup {
+				groups = []group.Group{}
+			}
 			mockMembershipRepo.EXPECT().ListByUserID(gomock.Any(), gomock.Any()).Return(memberships, tt.listErr).AnyTimes()
-			mockGroupRepo.EXPECT().FindByIDs(gomock.Any(), gomock.Any()).Return([]group.Group{mockGroup}, tt.findByIDsErr).AnyTimes()
+			mockGroupRepo.EXPECT().FindByIDs(gomock.Any(), gomock.Eq([]group.GroupID{gid})).Return(groups, tt.findByIDsErr).AnyTimes()
 
 			u := NewGroupUsecase(mockAuth, mockGroupRepo, mockMembershipRepo, mockUserRepo)
 
-			_, err := u.ListMyGroups(context.Background())
+			groupMemberships, err := u.ListMyGroups(context.Background())
 			if tt.success && err != nil {
 				t.Errorf("expected no error, but got %v", err)
 			}
 			if !tt.success && err == nil {
 				t.Errorf("expected error, but got nil")
+			}
+			if tt.success && len(groupMemberships) != tt.wantLen {
+				t.Fatalf("len = %d, want %d", len(groupMemberships), tt.wantLen)
+			}
+			if tt.success && tt.wantLen > 0 {
+				if got := groupMemberships[0].Group.ID(); got != gid {
+					t.Errorf("group id = %v, want %v", got, gid)
+				}
+				if got := groupMemberships[0].Role; got != membership.RoleOwner {
+					t.Errorf("role = %v, want %v", got, membership.RoleOwner)
+				}
 			}
 		})
 	}
