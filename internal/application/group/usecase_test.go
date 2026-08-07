@@ -227,26 +227,30 @@ func TestAddChildGroup(t *testing.T) {
 	operatorID := user.NewUserID()
 
 	tests := []struct {
-		name         string
-		success      bool
-		verifyErr    error
-		operatorFind error
-		operatorRole membership.Role
-		sameID       bool
-		childFindErr error
-		alreadyChild bool
-		circular     bool
-		addChildErr  error
+		name            string
+		success         bool
+		verifyErr       error
+		operatorFind    error
+		operatorRole    membership.Role
+		sameID          bool
+		childFindErr    error
+		findChildrenErr error
+		alreadyChild    bool
+		descendantsErr  error
+		circular        bool
+		addChildErr     error
 	}{
-		{"success add child", true, nil, nil, membership.RoleAdmin, false, nil, false, false, nil},
-		{"failure verify token error", false, errors.New("verify"), nil, membership.RoleAdmin, false, nil, false, false, nil},
-		{"failure not member", false, nil, membership.ErrMembershipNotFound, membership.RoleAdmin, false, nil, false, false, nil},
-		{"failure permission denied", false, nil, nil, membership.RoleMember, false, nil, false, false, nil},
-		{"failure same id", false, nil, nil, membership.RoleAdmin, true, nil, false, false, nil},
-		{"failure child not found", false, nil, nil, membership.RoleAdmin, false, group.ErrGroupNotFound, false, false, nil},
-		{"failure already child", false, nil, nil, membership.RoleAdmin, false, nil, true, false, nil},
-		{"failure circular reference", false, nil, nil, membership.RoleAdmin, false, nil, false, true, nil},
-		{"failure add child error", false, nil, nil, membership.RoleAdmin, false, nil, false, false, errors.New("add child error")},
+		{"success add child", true, nil, nil, membership.RoleAdmin, false, nil, nil, false, nil, false, nil},
+		{"failure verify token error", false, errors.New("verify"), nil, membership.RoleAdmin, false, nil, nil, false, nil, false, nil},
+		{"failure not member", false, nil, membership.ErrMembershipNotFound, membership.RoleAdmin, false, nil, nil, false, nil, false, nil},
+		{"failure permission denied", false, nil, nil, membership.RoleMember, false, nil, nil, false, nil, false, nil},
+		{"failure same id", false, nil, nil, membership.RoleAdmin, true, nil, nil, false, nil, false, nil},
+		{"failure child not found", false, nil, nil, membership.RoleAdmin, false, group.ErrGroupNotFound, nil, false, nil, false, nil},
+		{"failure find children error", false, nil, nil, membership.RoleAdmin, false, nil, errors.New("find children error"), false, nil, false, nil},
+		{"failure already child", false, nil, nil, membership.RoleAdmin, false, nil, nil, true, nil, false, nil},
+		{"failure collect descendants error", false, nil, nil, membership.RoleAdmin, false, nil, nil, false, errors.New("collect descendants error"), false, nil},
+		{"failure circular reference", false, nil, nil, membership.RoleAdmin, false, nil, nil, false, nil, true, nil},
+		{"failure add child error", false, nil, nil, membership.RoleAdmin, false, nil, nil, false, nil, false, errors.New("add child error")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -277,6 +281,12 @@ func TestAddChildGroup(t *testing.T) {
 
 			mockGroupRepo.EXPECT().FindChildren(gomock.Any(), gomock.Any()).DoAndReturn(
 				func(_ context.Context, gid group.GroupID) ([]group.Group, error) {
+					if tt.findChildrenErr != nil && gid == parentID {
+						return nil, tt.findChildrenErr
+					}
+					if tt.descendantsErr != nil && gid == childID {
+						return nil, tt.descendantsErr
+					}
 					if tt.alreadyChild && gid == parentID {
 						c := mocksgroup.NewMockGroup(ctrl)
 						c.EXPECT().ID().Return(childID).AnyTimes()
