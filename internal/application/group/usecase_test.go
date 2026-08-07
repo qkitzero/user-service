@@ -459,16 +459,18 @@ func TestAddMember(t *testing.T) {
 		grantRole     membership.Role
 		targetUserErr error
 		targetExists  bool
+		targetFindErr error
 		createErr     error
 	}{
-		{"success add member", true, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, false, nil},
-		{"failure verify token", false, errors.New("verify"), membership.RoleAdmin, nil, membership.RoleMember, nil, false, nil},
-		{"failure operator not member", false, nil, membership.RoleAdmin, membership.ErrMembershipNotFound, membership.RoleMember, nil, false, nil},
-		{"failure permission denied", false, nil, membership.RoleMember, nil, membership.RoleMember, nil, false, nil},
-		{"failure owner grant by admin", false, nil, membership.RoleAdmin, nil, membership.RoleOwner, nil, false, nil},
-		{"failure target user not found", false, nil, membership.RoleAdmin, nil, membership.RoleMember, user.ErrUserNotFound, false, nil},
-		{"failure already member", false, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, true, nil},
-		{"failure create error", false, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, false, errors.New("create")},
+		{"success add member", true, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, false, nil, nil},
+		{"failure verify token", false, errors.New("verify"), membership.RoleAdmin, nil, membership.RoleMember, nil, false, nil, nil},
+		{"failure operator not member", false, nil, membership.RoleAdmin, membership.ErrMembershipNotFound, membership.RoleMember, nil, false, nil, nil},
+		{"failure permission denied", false, nil, membership.RoleMember, nil, membership.RoleMember, nil, false, nil, nil},
+		{"failure owner grant by admin", false, nil, membership.RoleAdmin, nil, membership.RoleOwner, nil, false, nil, nil},
+		{"failure target user not found", false, nil, membership.RoleAdmin, nil, membership.RoleMember, user.ErrUserNotFound, false, nil, nil},
+		{"failure already member", false, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, true, nil, nil},
+		{"failure target membership lookup error", false, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, false, errors.New("target membership lookup error"), nil},
+		{"failure create error", false, nil, membership.RoleAdmin, nil, membership.RoleMember, nil, false, nil, errors.New("create")},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -497,6 +499,9 @@ func TestAddMember(t *testing.T) {
 					}
 					if tt.targetExists {
 						return mocksmembership.NewMockMembership(ctrl), nil
+					}
+					if tt.targetFindErr != nil {
+						return nil, tt.targetFindErr
 					}
 					return nil, membership.ErrMembershipNotFound
 				}).AnyTimes()
