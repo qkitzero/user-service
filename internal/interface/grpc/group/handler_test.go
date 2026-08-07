@@ -295,6 +295,7 @@ func TestAddChildGroup(t *testing.T) {
 		{"failure invalid parent id", "invalid", validGroupID(), false, nil, codes.InvalidArgument},
 		{"failure invalid child id", validGroupID(), "invalid", false, nil, codes.InvalidArgument},
 		{"failure circular reference", validGroupID(), validGroupID(), true, group.ErrCircularReference, codes.FailedPrecondition},
+		{"failure already child", validGroupID(), validGroupID(), true, group.ErrAlreadyChild, codes.AlreadyExists},
 		{"failure group not found", validGroupID(), validGroupID(), true, group.ErrGroupNotFound, codes.NotFound},
 		{"failure internal error", validGroupID(), validGroupID(), true, fmt.Errorf("add child error"), codes.Internal},
 	}
@@ -380,6 +381,7 @@ func TestAddMember(t *testing.T) {
 		{"failure invalid role", validGroupID(), validUserID(), "invalid", false, nil, codes.InvalidArgument},
 		{"failure permission denied", validGroupID(), validUserID(), "member", true, membership.ErrPermissionDenied, codes.PermissionDenied},
 		{"failure already member", validGroupID(), validUserID(), "member", true, membership.ErrAlreadyMember, codes.AlreadyExists},
+		{"failure user not found", validGroupID(), validUserID(), "member", true, user.ErrUserNotFound, codes.NotFound},
 		{"failure membership not found", validGroupID(), validUserID(), "member", true, membership.ErrMembershipNotFound, codes.NotFound},
 		{"failure internal error", validGroupID(), validUserID(), "member", true, fmt.Errorf("add error"), codes.Internal},
 		{"failure status preserved", validGroupID(), validUserID(), "member", true, status.Error(codes.Unauthenticated, "auth"), codes.Unauthenticated},
@@ -427,6 +429,7 @@ func TestUpdateMemberRole(t *testing.T) {
 	}{
 		{"success update role", validGroupID(), validUserID(), "admin", true, nil, codes.OK},
 		{"failure invalid group id", "invalid", validUserID(), "admin", false, nil, codes.InvalidArgument},
+		{"failure invalid user id", validGroupID(), "invalid", "admin", false, nil, codes.InvalidArgument},
 		{"failure invalid role", validGroupID(), validUserID(), "invalid", false, nil, codes.InvalidArgument},
 		{"failure permission denied", validGroupID(), validUserID(), "admin", true, membership.ErrPermissionDenied, codes.PermissionDenied},
 		{"failure last owner", validGroupID(), validUserID(), "member", true, membership.ErrLastOwnerCannotLeave, codes.FailedPrecondition},
