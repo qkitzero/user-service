@@ -17,6 +17,11 @@ type GroupMembership struct {
 	Role  membership.Role
 }
 
+type Member struct {
+	Membership  membership.Membership
+	DisplayName user.DisplayName
+}
+
 type GroupUsecase interface {
 	CreateGroup(ctx context.Context, name group.GroupName) (group.Group, error)
 	GetGroup(ctx context.Context, groupID group.GroupID) (group.Group, error)
@@ -26,10 +31,10 @@ type GroupUsecase interface {
 	RemoveChildGroup(ctx context.Context, parentID, childID group.GroupID) error
 	ListChildGroups(ctx context.Context, groupID group.GroupID) ([]group.Group, error)
 	ListParentGroups(ctx context.Context, groupID group.GroupID) ([]group.Group, error)
-	AddMember(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (membership.Membership, error)
+	AddMember(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (Member, error)
 	RemoveMember(ctx context.Context, groupID group.GroupID, targetUserID user.UserID) error
-	UpdateMemberRole(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (membership.Membership, error)
-	ListMembers(ctx context.Context, groupID group.GroupID) ([]membership.Membership, error)
+	UpdateMemberRole(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (Member, error)
+	ListMembers(ctx context.Context, groupID group.GroupID) ([]Member, error)
 	ListMyGroups(ctx context.Context) ([]GroupMembership, error)
 }
 
@@ -74,6 +79,30 @@ func (u *groupUsecase) currentUserID(ctx context.Context) (user.UserID, error) {
 	}
 
 	return caller.ID(), nil
+}
+
+func (u *groupUsecase) toMembers(ctx context.Context, memberships []membership.Membership) ([]Member, error) {
+	userIDs := make([]user.UserID, 0, len(memberships))
+	for _, m := range memberships {
+		userIDs = append(userIDs, m.UserID())
+	}
+
+	users, err := u.userRepo.FindByIDs(ctx, userIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	displayNameByUserID := make(map[user.UserID]user.DisplayName, len(users))
+	for _, foundUser := range users {
+		displayNameByUserID[foundUser.ID()] = foundUser.DisplayName()
+	}
+
+	members := make([]Member, 0, len(memberships))
+	for _, m := range memberships {
+		members = append(members, Member{Membership: m, DisplayName: displayNameByUserID[m.UserID()]})
+	}
+
+	return members, nil
 }
 
 func (u *groupUsecase) operatorRole(ctx context.Context, groupID group.GroupID) (membership.Role, error) {
@@ -237,41 +266,42 @@ func (u *groupUsecase) collectDescendants(ctx context.Context, root group.GroupI
 	return visited, nil
 }
 
-func (u *groupUsecase) AddMember(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (membership.Membership, error) {
+func (u *groupUsecase) AddMember(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (Member, error) {
 	operatorID, err := u.currentUserID(ctx)
 	if err != nil {
-		return nil, err
+		return Member{}, err
 	}
 
 	operator, err := u.membershipRepo.FindByUserAndGroup(ctx, operatorID, groupID)
 	if err != nil {
-		return nil, err
+		return Member{}, err
 	}
 	if !operator.Role().CanManageMembers() {
-		return nil, membership.ErrPermissionDenied
+		return Member{}, membership.ErrPermissionDenied
 	}
 	if role.IsOwner() && !operator.Role().IsOwner() {
-		return nil, membership.ErrPermissionDenied
+		return Member{}, membership.ErrPermissionDenied
 	}
 
-	if _, err := u.userRepo.FindByID(ctx, targetUserID); err != nil {
-		return nil, err
+	targetUser, err := u.userRepo.FindByID(ctx, targetUserID)
+	if err != nil {
+		return Member{}, err
 	}
 
 	_, err = u.membershipRepo.FindByUserAndGroup(ctx, targetUserID, groupID)
 	if err == nil {
-		return nil, membership.ErrAlreadyMember
+		return Member{}, membership.ErrAlreadyMember
 	}
 	if !errors.Is(err, membership.ErrMembershipNotFound) {
-		return nil, err
+		return Member{}, err
 	}
 
 	newMembership := membership.NewMembership(membership.NewMembershipID(), targetUserID, groupID, role, time.Now())
 	if err := u.membershipRepo.Create(ctx, newMembership); err != nil {
-		return nil, err
+		return Member{}, err
 	}
 
-	return newMembership, nil
+	return Member{Membership: newMembership, DisplayName: targetUser.DisplayName()}, nil
 }
 
 func (u *groupUsecase) RemoveMember(ctx context.Context, groupID group.GroupID, targetUserID user.UserID) error {
@@ -307,49 +337,62 @@ func (u *groupUsecase) RemoveMember(ctx context.Context, groupID group.GroupID, 
 	return u.membershipRepo.Delete(ctx, targetUserID, groupID)
 }
 
-func (u *groupUsecase) UpdateMemberRole(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (membership.Membership, error) {
+func (u *groupUsecase) UpdateMemberRole(ctx context.Context, groupID group.GroupID, targetUserID user.UserID, role membership.Role) (Member, error) {
 	operatorID, err := u.currentUserID(ctx)
 	if err != nil {
-		return nil, err
+		return Member{}, err
 	}
 
 	operator, err := u.membershipRepo.FindByUserAndGroup(ctx, operatorID, groupID)
 	if err != nil {
-		return nil, err
+		return Member{}, err
 	}
 	if !operator.Role().IsOwner() {
-		return nil, membership.ErrPermissionDenied
+		return Member{}, membership.ErrPermissionDenied
 	}
 
 	target, err := u.membershipRepo.FindByUserAndGroup(ctx, targetUserID, groupID)
 	if err != nil {
-		return nil, err
+		return Member{}, err
 	}
 
 	if target.Role().IsOwner() && !role.IsOwner() {
 		count, err := u.membershipRepo.CountOwners(ctx, groupID)
 		if err != nil {
-			return nil, err
+			return Member{}, err
 		}
 		if count <= 1 {
-			return nil, membership.ErrLastOwnerCannotLeave
+			return Member{}, membership.ErrLastOwnerCannotLeave
 		}
+	}
+
+	targetUser, err := u.userRepo.FindByID(ctx, targetUserID)
+	if err != nil {
+		return Member{}, err
 	}
 
 	target.ChangeRole(role)
 	if err := u.membershipRepo.Update(ctx, target); err != nil {
-		return nil, err
+		return Member{}, err
 	}
 
-	return target, nil
+	return Member{Membership: target, DisplayName: targetUser.DisplayName()}, nil
 }
 
-func (u *groupUsecase) ListMembers(ctx context.Context, groupID group.GroupID) ([]membership.Membership, error) {
-	if _, err := u.currentUserID(ctx); err != nil {
+func (u *groupUsecase) ListMembers(ctx context.Context, groupID group.GroupID) ([]Member, error) {
+	if _, err := u.operatorRole(ctx, groupID); err != nil {
+		if errors.Is(err, membership.ErrMembershipNotFound) {
+			return nil, membership.ErrPermissionDenied
+		}
 		return nil, err
 	}
 
-	return u.membershipRepo.ListByGroupID(ctx, groupID)
+	memberships, err := u.membershipRepo.ListByGroupID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.toMembers(ctx, memberships)
 }
 
 func (u *groupUsecase) ListMyGroups(ctx context.Context) ([]GroupMembership, error) {

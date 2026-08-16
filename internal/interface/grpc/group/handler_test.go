@@ -434,21 +434,28 @@ func TestAddMember(t *testing.T) {
 
 			mockUsecase := mocksappgroup.NewMockGroupUsecase(ctrl)
 			mockMembership := mocksmembership.NewMockMembership(ctrl)
+			member := appgroup.Member{}
 			if tt.callUsecase {
-				mockUsecase.EXPECT().AddMember(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockMembership, tt.addErr).Times(1)
 				if tt.addErr == nil {
 					mockMembership.EXPECT().UserID().Return(user.NewUserID()).AnyTimes()
 					mockMembership.EXPECT().Role().Return(membership.RoleMember).AnyTimes()
+					member = appgroup.Member{Membership: mockMembership, DisplayName: user.DisplayName("test user")}
 				}
+				mockUsecase.EXPECT().AddMember(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(member, tt.addErr).Times(1)
 			}
 
 			handler := NewGroupHandler(mockUsecase)
 
 			req := &groupv1.AddMemberRequest{GroupId: tt.groupID, UserId: tt.userID, Role: tt.role}
 
-			_, err := handler.AddMember(context.Background(), req)
+			resp, err := handler.AddMember(context.Background(), req)
 			if got := status.Code(err); got != tt.wantCode {
 				t.Errorf("expected code %v, got %v (err=%v)", tt.wantCode, got, err)
+			}
+			if tt.wantCode == codes.OK {
+				if got := resp.GetMember().GetDisplayName(); got != member.DisplayName.String() {
+					t.Errorf("display name = %v, want %v", got, member.DisplayName.String())
+				}
 			}
 		})
 	}
@@ -483,21 +490,28 @@ func TestUpdateMemberRole(t *testing.T) {
 
 			mockUsecase := mocksappgroup.NewMockGroupUsecase(ctrl)
 			mockMembership := mocksmembership.NewMockMembership(ctrl)
+			member := appgroup.Member{}
 			if tt.callUsecase {
-				mockUsecase.EXPECT().UpdateMemberRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockMembership, tt.updateErr).Times(1)
 				if tt.updateErr == nil {
 					mockMembership.EXPECT().UserID().Return(user.NewUserID()).AnyTimes()
 					mockMembership.EXPECT().Role().Return(membership.RoleAdmin).AnyTimes()
+					member = appgroup.Member{Membership: mockMembership, DisplayName: user.DisplayName("test user")}
 				}
+				mockUsecase.EXPECT().UpdateMemberRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(member, tt.updateErr).Times(1)
 			}
 
 			handler := NewGroupHandler(mockUsecase)
 
 			req := &groupv1.UpdateMemberRoleRequest{GroupId: tt.groupID, UserId: tt.userID, Role: tt.role}
 
-			_, err := handler.UpdateMemberRole(context.Background(), req)
+			resp, err := handler.UpdateMemberRole(context.Background(), req)
 			if got := status.Code(err); got != tt.wantCode {
 				t.Errorf("expected code %v, got %v (err=%v)", tt.wantCode, got, err)
+			}
+			if tt.wantCode == codes.OK {
+				if got := resp.GetMember().GetDisplayName(); got != member.DisplayName.String() {
+					t.Errorf("display name = %v, want %v", got, member.DisplayName.String())
+				}
 			}
 		})
 	}
@@ -556,6 +570,7 @@ func TestListMembers(t *testing.T) {
 	}{
 		{"success list members", validGroupID(), true, nil, codes.OK},
 		{"failure invalid group id", "invalid", false, nil, codes.InvalidArgument},
+		{"failure permission denied", validGroupID(), true, membership.ErrPermissionDenied, codes.PermissionDenied},
 		{"failure internal error", validGroupID(), true, fmt.Errorf("list error"), codes.Internal},
 	}
 	for _, tt := range tests {
@@ -567,16 +582,17 @@ func TestListMembers(t *testing.T) {
 			defer ctrl.Finish()
 
 			memberUserID := user.NewUserID()
+			memberDisplayName := user.DisplayName("test user")
 			mockUsecase := mocksappgroup.NewMockGroupUsecase(ctrl)
 			mockMembership := mocksmembership.NewMockMembership(ctrl)
 			if tt.callUsecase {
-				var memberships []membership.Membership
+				var members []appgroup.Member
 				if tt.listErr == nil {
 					mockMembership.EXPECT().UserID().Return(memberUserID).AnyTimes()
 					mockMembership.EXPECT().Role().Return(membership.RoleMember).AnyTimes()
-					memberships = []membership.Membership{mockMembership}
+					members = []appgroup.Member{{Membership: mockMembership, DisplayName: memberDisplayName}}
 				}
-				mockUsecase.EXPECT().ListMembers(gomock.Any(), gomock.Any()).Return(memberships, tt.listErr).Times(1)
+				mockUsecase.EXPECT().ListMembers(gomock.Any(), gomock.Any()).Return(members, tt.listErr).Times(1)
 			}
 
 			handler := NewGroupHandler(mockUsecase)
@@ -596,6 +612,9 @@ func TestListMembers(t *testing.T) {
 				}
 				if got := resp.GetMembers()[0].GetRole(); got != membership.RoleMember.String() {
 					t.Errorf("role = %v, want %v", got, membership.RoleMember.String())
+				}
+				if got := resp.GetMembers()[0].GetDisplayName(); got != memberDisplayName.String() {
+					t.Errorf("display name = %v, want %v", got, memberDisplayName.String())
 				}
 			}
 		})

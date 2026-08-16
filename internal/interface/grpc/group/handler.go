@@ -62,10 +62,11 @@ func toProtoGroup(g domaingroup.Group) *groupv1.Group {
 	}
 }
 
-func toProtoMember(m membership.Membership) *groupv1.Member {
+func toProtoMember(m appgroup.Member) *groupv1.Member {
 	return &groupv1.Member{
-		UserId: m.UserID().String(),
-		Role:   m.Role().String(),
+		UserId:      m.Membership.UserID().String(),
+		Role:        m.Membership.Role().String(),
+		DisplayName: m.DisplayName.String(),
 	}
 }
 
@@ -277,17 +278,17 @@ func (h *GroupHandler) ListMembers(ctx context.Context, req *groupv1.ListMembers
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	memberships, err := h.groupUsecase.ListMembers(ctx, groupID)
+	members, err := h.groupUsecase.ListMembers(ctx, groupID)
 	if err != nil {
 		return nil, mapError(err, "ListMembers")
 	}
 
-	members := make([]*groupv1.Member, 0, len(memberships))
-	for _, m := range memberships {
-		members = append(members, toProtoMember(m))
+	protoMembers := make([]*groupv1.Member, 0, len(members))
+	for _, m := range members {
+		protoMembers = append(protoMembers, toProtoMember(m))
 	}
 
-	return &groupv1.ListMembersResponse{Members: members}, nil
+	return &groupv1.ListMembersResponse{Members: protoMembers}, nil
 }
 
 func (h *GroupHandler) ListMyGroups(ctx context.Context, _ *groupv1.ListMyGroupsRequest) (*groupv1.ListMyGroupsResponse, error) {
