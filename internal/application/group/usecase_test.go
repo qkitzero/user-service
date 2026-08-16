@@ -715,6 +715,8 @@ func TestListMembers(t *testing.T) {
 	}{
 		{"success list members", true, nil, nil, nil, nil, nil, []user.DisplayName{"test user", ""}},
 		{"failure verify token", false, errors.New("verify"), nil, nil, nil, nil, nil},
+		{"failure caller not member", false, nil, membership.ErrMembershipNotFound, nil, nil, membership.ErrPermissionDenied, nil},
+		{"failure caller lookup error", false, nil, errors.New("caller lookup error"), nil, nil, nil, nil},
 		{"failure list error", false, nil, nil, errors.New("list"), nil, nil, nil},
 		{"failure find users error", false, nil, nil, nil, errors.New("find users error"), nil, nil},
 	}

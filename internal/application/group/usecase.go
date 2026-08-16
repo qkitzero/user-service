@@ -380,7 +380,10 @@ func (u *groupUsecase) UpdateMemberRole(ctx context.Context, groupID group.Group
 }
 
 func (u *groupUsecase) ListMembers(ctx context.Context, groupID group.GroupID) ([]Member, error) {
-	if _, err := u.currentUserID(ctx); err != nil {
+	if _, err := u.operatorRole(ctx, groupID); err != nil {
+		if errors.Is(err, membership.ErrMembershipNotFound) {
+			return nil, membership.ErrPermissionDenied
+		}
 		return nil, err
 	}
 

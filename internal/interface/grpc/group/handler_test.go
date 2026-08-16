@@ -570,6 +570,7 @@ func TestListMembers(t *testing.T) {
 	}{
 		{"success list members", validGroupID(), true, nil, codes.OK},
 		{"failure invalid group id", "invalid", false, nil, codes.InvalidArgument},
+		{"failure permission denied", validGroupID(), true, membership.ErrPermissionDenied, codes.PermissionDenied},
 		{"failure internal error", validGroupID(), true, fmt.Errorf("list error"), codes.Internal},
 	}
 	for _, tt := range tests {
