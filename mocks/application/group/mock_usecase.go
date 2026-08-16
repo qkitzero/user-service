@@ -59,10 +59,10 @@ func (mr *MockGroupUsecaseMockRecorder) AddChildGroup(ctx, parentID, childID any
 }
 
 // AddMember mocks base method.
-func (m *MockGroupUsecase) AddMember(ctx context.Context, groupID group0.GroupID, targetUserID user.UserID, role membership.Role) (membership.Membership, error) {
+func (m *MockGroupUsecase) AddMember(ctx context.Context, groupID group0.GroupID, targetUserID user.UserID, role membership.Role) (group.Member, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddMember", ctx, groupID, targetUserID, role)
-	ret0, _ := ret[0].(membership.Membership)
+	ret0, _ := ret[0].(group.Member)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -133,10 +133,10 @@ func (mr *MockGroupUsecaseMockRecorder) ListChildGroups(ctx, groupID any) *gomoc
 }
 
 // ListMembers mocks base method.
-func (m *MockGroupUsecase) ListMembers(ctx context.Context, groupID group0.GroupID) ([]membership.Membership, error) {
+func (m *MockGroupUsecase) ListMembers(ctx context.Context, groupID group0.GroupID) ([]group.Member, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListMembers", ctx, groupID)
-	ret0, _ := ret[0].([]membership.Membership)
+	ret0, _ := ret[0].([]group.Member)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -221,10 +221,10 @@ func (mr *MockGroupUsecaseMockRecorder) UpdateGroup(ctx, groupID, name any) *gom
 }
 
 // UpdateMemberRole mocks base method.
-func (m *MockGroupUsecase) UpdateMemberRole(ctx context.Context, groupID group0.GroupID, targetUserID user.UserID, role membership.Role) (membership.Membership, error) {
+func (m *MockGroupUsecase) UpdateMemberRole(ctx context.Context, groupID group0.GroupID, targetUserID user.UserID, role membership.Role) (group.Member, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateMemberRole", ctx, groupID, targetUserID, role)
-	ret0, _ := ret[0].(membership.Membership)
+	ret0, _ := ret[0].(group.Member)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

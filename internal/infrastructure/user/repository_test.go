@@ -356,6 +356,139 @@ func TestFindByID(t *testing.T) {
 	}
 }
 
+func TestFindByIDs(t *testing.T) {
+	t.Parallel()
+	wantDisplayNames := []string{"first user", "second user"}
+
+	tests := []struct {
+		name     string
+		success  bool
+		emptyIDs bool
+		wantLen  int
+		setup    func(mock sqlmock.Sqlmock, userIDs []user.UserID)
+	}{
+		{
+			name:    "success find users by ids",
+			success: true,
+			wantLen: 2,
+			setup: func(mock sqlmock.Sqlmock, userIDs []user.UserID) {
+				userRows := sqlmock.NewRows([]string{"id", "display_name", "birth_date", "created_at", "updated_at"}).
+					AddRow(userIDs[0], wantDisplayNames[0], time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), time.Now(), time.Now()).
+					AddRow(userIDs[1], wantDisplayNames[1], time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), time.Now(), time.Now())
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id IN ($1,$2)`)).
+					WithArgs(userIDs[0], userIDs[1]).
+					WillReturnRows(userRows)
+
+				identitiesRows := sqlmock.NewRows([]string{"id", "user_id"}).
+					AddRow(identity.IdentityID("google-oauth2|000000000000000000000"), userIDs[0])
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "identities" WHERE user_id IN ($1,$2)`)).
+					WithArgs(userIDs[0], userIDs[1]).
+					WillReturnRows(identitiesRows)
+			},
+		},
+		{
+			name:     "success empty ids",
+			success:  true,
+			emptyIDs: true,
+			wantLen:  0,
+			setup:    func(mock sqlmock.Sqlmock, userIDs []user.UserID) {},
+		},
+		{
+			name:    "success no users found",
+			success: true,
+			wantLen: 0,
+			setup: func(mock sqlmock.Sqlmock, userIDs []user.UserID) {
+				userRows := sqlmock.NewRows([]string{"id", "display_name", "birth_date", "created_at", "updated_at"})
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id IN ($1,$2)`)).
+					WithArgs(userIDs[0], userIDs[1]).
+					WillReturnRows(userRows)
+			},
+		},
+		{
+			name:    "failure find users error",
+			success: false,
+			setup: func(mock sqlmock.Sqlmock, userIDs []user.UserID) {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id IN ($1,$2)`)).
+					WithArgs(userIDs[0], userIDs[1]).
+					WillReturnError(errors.New("find users error"))
+			},
+		},
+		{
+			name:    "failure find identities error",
+			success: false,
+			setup: func(mock sqlmock.Sqlmock, userIDs []user.UserID) {
+				userRows := sqlmock.NewRows([]string{"id", "display_name", "birth_date", "created_at", "updated_at"}).
+					AddRow(userIDs[0], wantDisplayNames[0], time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), time.Now(), time.Now()).
+					AddRow(userIDs[1], wantDisplayNames[1], time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), time.Now(), time.Now())
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id IN ($1,$2)`)).
+					WithArgs(userIDs[0], userIDs[1]).
+					WillReturnRows(userRows)
+
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "identities" WHERE user_id IN ($1,$2)`)).
+					WithArgs(userIDs[0], userIDs[1]).
+					WillReturnError(errors.New("find identities error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			sqlDB, mock, err := sqlmock.New()
+			if err != nil {
+				t.Errorf("failed to new sqlmock: %s", err)
+			}
+
+			gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}), &gorm.Config{})
+			if err != nil {
+				t.Errorf("failed to open gorm: %s", err)
+			}
+
+			userIDs := []user.UserID{{UUID: uuid.New()}, {UUID: uuid.New()}}
+			tt.setup(mock, userIDs)
+
+			repo := NewUserRepository(gormDB)
+
+			ids := userIDs
+			if tt.emptyIDs {
+				ids = []user.UserID{}
+			}
+
+			users, err := repo.FindByIDs(context.Background(), ids)
+			if tt.success && err != nil {
+				t.Errorf("expected no error, but got %v", err)
+			}
+			if !tt.success && err == nil {
+				t.Errorf("expected error, but got nil")
+			}
+			if tt.success && len(users) != tt.wantLen {
+				t.Fatalf("len = %d, want %d", len(users), tt.wantLen)
+			}
+			for i := range users {
+				if got := users[i].ID(); got != userIDs[i] {
+					t.Errorf("user id = %v, want %v", got, userIDs[i])
+				}
+				if got := users[i].DisplayName().String(); got != wantDisplayNames[i] {
+					t.Errorf("display name = %v, want %v", got, wantDisplayNames[i])
+				}
+			}
+			if tt.success && tt.wantLen == 2 {
+				if got := len(users[0].Identities()); got != 1 {
+					t.Errorf("identities = %d, want 1", got)
+				}
+				if got := len(users[1].Identities()); got != 0 {
+					t.Errorf("identities = %d, want 0", got)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 	tests := []struct {

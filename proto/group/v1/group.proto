@@ -132,6 +132,7 @@ message RemoveChildGroupResponse {}
 message Member {
   string user_id = 1;
   string role = 2;
+  string display_name = 3;
 }
 
 message AddMemberRequest {

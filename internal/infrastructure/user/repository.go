@@ -19,6 +19,10 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 	return &userRepository{db: db}
 }
 
+func toUser(m UserModel, identities []identity.Identity) user.User {
+	return user.NewUser(m.ID, identities, m.DisplayName, m.BirthDate, m.CreatedAt, m.UpdatedAt)
+}
+
 func (r *userRepository) Create(ctx context.Context, u user.User) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		userModel := UserModel{
@@ -78,14 +82,7 @@ func (r *userRepository) FindByIdentityID(ctx context.Context, id identity.Ident
 		identities = append(identities, identity.NewIdentity(im.ID))
 	}
 
-	return user.NewUser(
-		userModel.ID,
-		identities,
-		userModel.DisplayName,
-		userModel.BirthDate,
-		userModel.CreatedAt,
-		userModel.UpdatedAt,
-	), nil
+	return toUser(userModel, identities), nil
 }
 
 func (r *userRepository) FindByID(ctx context.Context, id user.UserID) (user.User, error) {
@@ -108,14 +105,44 @@ func (r *userRepository) FindByID(ctx context.Context, id user.UserID) (user.Use
 		identities = append(identities, identity.NewIdentity(im.ID))
 	}
 
-	return user.NewUser(
-		userModel.ID,
-		identities,
-		userModel.DisplayName,
-		userModel.BirthDate,
-		userModel.CreatedAt,
-		userModel.UpdatedAt,
-	), nil
+	return toUser(userModel, identities), nil
+}
+
+func (r *userRepository) FindByIDs(ctx context.Context, ids []user.UserID) ([]user.User, error) {
+	if len(ids) == 0 {
+		return []user.User{}, nil
+	}
+
+	var userModels []UserModel
+	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&userModels).Error; err != nil {
+		return nil, err
+	}
+
+	if len(userModels) == 0 {
+		return []user.User{}, nil
+	}
+
+	userIDs := make([]user.UserID, 0, len(userModels))
+	for _, m := range userModels {
+		userIDs = append(userIDs, m.ID)
+	}
+
+	var identityModels []infraidentity.IdentityModel
+	if err := r.db.WithContext(ctx).Where("user_id IN ?", userIDs).Find(&identityModels).Error; err != nil {
+		return nil, err
+	}
+
+	identitiesByUserID := make(map[user.UserID][]identity.Identity, len(userModels))
+	for _, im := range identityModels {
+		identitiesByUserID[im.UserID] = append(identitiesByUserID[im.UserID], identity.NewIdentity(im.ID))
+	}
+
+	users := make([]user.User, 0, len(userModels))
+	for _, m := range userModels {
+		users = append(users, toUser(m, identitiesByUserID[m.ID]))
+	}
+
+	return users, nil
 }
 
 func (r *userRepository) Update(ctx context.Context, u user.User) error {
